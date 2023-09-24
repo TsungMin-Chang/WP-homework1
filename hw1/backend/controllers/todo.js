@@ -1,13 +1,13 @@
-import TodoModel from "../models/todoModel.js";
+import DiaryModel from "../models/todoModel.js";
 
-// Get all todos
-export const getTodos = async (req, res) => {
+// R
+export const getDiaries = async (req, res) => {
   try {
-    // Find all todos
-    const todos = await TodoModel.find({});
+    // Find all diaries
+    const diaries = await DiaryModel.find({});
 
-    // Return todos
-    return res.status(200).json(todos);
+    // Return diaries
+    return res.status(200).json(diaries);
   } catch (error) {
     // If there is an error, return 500 and the error message
     // You can read more about HTTP status codes here:
@@ -17,72 +17,89 @@ export const getTodos = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-// Create a todo
-export const createTodo = async (req, res) => {
-  const { title, description } = req.body;
+// C
+export const createDiary = async (req, res) => {
+  const { feeling, category, description, image } = req.body;
 
-  // Check title and description
-  if (!title || !description) {
+  // Check input fields 
+  if ( !feeling || !category || !description) {
     return res
       .status(400)
-      .json({ message: "Title and description are required!" });
+      .json({ message: "Some of your fields are missing!" });
   }
 
   // Create a new todo
   try {
-    const newTodo = await TodoModel.create({
-      title,
-      description,
-      completed: false,
-    });
-    return res.status(201).json(newTodo);
+    if ( !image ) {
+      const newDiary = await DiaryModel.create({
+        feeling,
+        category,
+        description
+      });
+      return res.status(201).json(newDiary);
+    } else {
+      const newDiary = await DiaryModel.create({
+        feeling,
+        category,
+        description,
+        image
+      });
+      return res.status(201).json(newDiary);
+    }
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
-// Update a todo
-export const updateTodo = async (req, res) => {
+// U
+export const updateDiary = async (req, res) => {
   const { id } = req.params;
-  const { title, description, completed } = req.body;
+  const { feeling, category, description, image } = req.body;
 
   try {
     // Check if the id is valid
-    const existedTodo = await TodoModel.findById(id);
-    if (!existedTodo) {
-      return res.status(404).json({ message: "Todo not found!" });
+    const existedDiary = await DiaryModel.findById(id);
+    if ( !existedDiary ) {
+      return res.status(404).json({ message: "Diary card not found!" });
+    }
+
+    // Check input fields 
+    if ( !feeling || !category || !description) {
+      return res.status(400).json({ message: "Some of your fields are missing!" });
     }
 
     // Update the todo
-    if (title !== undefined) existedTodo.title = title;
-    if (description !== undefined) existedTodo.description = description;
-    if (completed !== undefined) existedTodo.completed = completed;
+    if ( feeling ) existedDiary.feeling = feeling;
+    if ( category ) existedDiary.category = category;
+    if ( description ) existedDiary.description = description;
+    if ( image ) existedDiary.image = image;
 
-    // Save the updated todo
-    await existedTodo.save();
+    // Save the updated todo - db
+    await existedDiary.save();
 
     // Rename _id to id
-    existedTodo.id = existedTodo._id;
-    delete existedTodo._id;
+    existedDiary.id = existedDiary._id;
+    delete existedDiary._id;
 
-    return res.status(200).json(existedTodo);
+    // Show updated diary card - frontend
+    return res.status(200).json(existedDiary);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
-// Delete a todo
-export const deleteTodo = async (req, res) => {
+// D
+export const deleteDiary = async (req, res) => {
   const { id } = req.params;
   try {
     // Check if the id is valid
-    const existedTodo = await TodoModel.findById(id);
-    if (!existedTodo) {
-      return res.status(404).json({ message: "Todo not found!" });
+    const existedDiary = await DiaryModel.findById(id);
+    if (!existedDiary) {
+      return res.status(404).json({ message: "Diary card not found!" });
     }
-    // Delete the todo
-    await TodoModel.findByIdAndDelete(id);
-    return res.status(200).json({ message: "Todo deleted successfully!" });
+    // Delete the diary
+    await DiaryModel.findByIdAndDelete(id);
+    return res.status(200).json({ message: "Diary card deleted successfully!" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

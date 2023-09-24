@@ -1,7 +1,10 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>todo list</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Homework 1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css" />
     <script defer src="index.js"></script>
     <script
@@ -12,28 +15,181 @@
     ></script>
   </head>
   <body>
-    <h1>todo list</h1>
-    <div id="todo-input-container">
-      <input type="text" id="todo-input" placeholder="new todo" tabindex="1" />
-      <button id="todo-add" tabindex="3">add</button>
-    </div>
-    <textarea
-      id="todo-description-input"
-      placeholder="description"
-      tabindex="2"
-    ></textarea>
-    <section id="todos"></section>
-  </body>
-  <template id="todo-item-template">
-    <details id="" class="todo-item">
-      <summary>
-        <div>
-          <input data-id="" type="checkbox" />
-          <p class="todo-title">todo 1</p>
+    <div class="container text-center">
+      <br/>
+      <h1>
+        <div class="row">
+          <div class="col-12">
+            <strong>My Diary</strong>
+          </div>
         </div>
-        <button data-id="" class="delete-todo">delete</button>
-      </summary>
-      <p class="todo-description">todo 1 description</p>
-    </details>
+      </h1>
+    </div>
+    <hr/>
+    <div class="container text-right">
+      <!-- Button trigger modal -->
+      <button type="button" id="diary-add" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addModal">
+        Adding a Diary
+      </button>
+      <!-- Modal -->
+      <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Adding a new diary</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <select id="feeling-input" class="form-select">
+                  <option selected>Select your feeling:</option>
+                  <option value="1">Happy</option>
+                  <option value="2">Angry</option>
+                  <option value="3">Sad</option>
+                </select>
+                <br/>
+                <select id="category-input" class="form-select">
+                  <option selected>Select your category:</option>
+                  <option value="1">Academic</option>
+                  <option value="2">Social-life</option>
+                  <option value="3">Student-Organization</option>
+                </select>
+                <br/>
+                <div class="form-floating">
+                  <p class="text-left">Please enter an English description:</p>
+                  <textarea class="form-control" id="floatingTextarea2" style="height: 200px; padding-top: 1.25rem;"></textarea>
+                </div>
+                <br/>
+                <div class="mb-3 text-left">
+                  <label for="formFile" class="form-label">Choose file:</label>
+                  <input class="form-control" type="file" id="formFile">
+                </div>
+                <div>
+                  <img class="image-preview" src="" style="display: none;"/>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" id="diary-submit" class="btn btn-dark">Submit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br/>
+    <select id="filter-input" class="form-select" aria-label="Default select example" style="background-color: rgb(46, 39, 31); color: white;">
+      <option selected>You may choose a filter:</option>
+      <option value="1">Happy</option>
+      <option value="2">Angry</option>
+      <option value="3">Sad</option>
+      <option value="4">Academic</option>
+      <option value="5">Social-life</option>
+      <option value="6">Student-Organization</option>
+    </select>
+    <br/>
+    <section id="diary-cards-display" class="grid-container"></section>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+  </body>
+  <template id="diary-card-template">
+    <div id="" class="diary-card">
+      <div class="card">
+        <div class="card-header diary-update-time">
+          Time
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item diary-feeling" >Feeling</li>
+          <li class="list-group-item diary-category">Category</li>
+        </ul>
+        <div class="diary-description" style="display: none;">Hidden Description</div>
+        <div class="diary-image" style="display: none;">Hidden Image Src</div>
+      </div>
+    </div>
+  </template>
+  <template id="diary-detail-template">
+    <div class="container">
+      <div class="row">
+        <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+          <div class="btn-group me-2" role="group" aria-label="First group">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-dark update-diary-card" id="diary-update" data-bs-toggle="modal" data-bs-target="#updateModal">
+              Update
+            </button>
+            <!-- Modal -->
+            <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Updating an old diary</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <select id="feeling-update" class="form-select">
+                        <option selected id="feeling-place-holder"></option>
+                        <option value="1">Happy</option>
+                        <option value="2">Angry</option>
+                        <option value="3">Sad</option>
+                      </select>
+                      <br/>
+                      <select id="category-update" class="form-select">
+                        <option selected id="category-place-holder"></option>
+                        <option value="1">Academic</option>
+                        <option value="2">Social-life</option>
+                        <option value="3">Student-Organization</option>
+                      </select>
+                      <br/>
+                      <div class="form-floating">
+                        <p class="text-left">Please enter an English description:</p>
+                        <textarea class="form-control" id="floatingTextarea3 description-place-holder" style="height: 200px; padding-top: 1.25rem;"></textarea>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-dark detail-update-submit">Submit</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="btn-group me-2" role="group" aria-label="Second group">
+            <button type="button" class="btn btn-dark delete-diary-card" data-id="">
+              Delete
+            </button>
+          </div>
+          <div class="btn-group" role="group" aria-label="Third group">
+            <button type="button" id="diary-back-to-cards" class="btn btn-dark">
+              Back to Cards
+            </button>
+          </div>
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div id="" class="detail-card">
+          <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" class="scrollspy-example bg-light p-3 rounded-2" tabindex="0">
+            <h4 id="scrollspyHeading1">Remember this?</h4>
+            <div class="card mb-3" style="min-width: 1000px;">
+              <div class="row">
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 col-xl-8 col-xxl-8">
+                  <br>
+                  <img src="" class="img-fluid rounded-start detail-image" alt="...">
+                </div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4">
+                  <div class="card-body">
+                    <br>
+                    <ul>
+                      <li class="detail-update-time">Time</li>
+                      <li class="detail-feeling">Feeling</li>
+                      <li class="detail-category">Category</li>
+                      <li><p class="card-text card-text-content detail-description">Description</p></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </template>
 </html>

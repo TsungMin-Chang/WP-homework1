@@ -1,9 +1,54 @@
-:root {
+/*:root {
   --todo-intput-height: 3rem;
   --todo-intput-font-size: 2rem;
+}*/
+
+body{
+  width: 70%;
+  margin-right: 15%;
+  margin-left: 15%;
+  background-color: rgb(230, 230, 230);
 }
 
-body {
+.text-right{
+  text-align: right;
+}
+
+.text-left{
+  text-align: left;
+}
+
+.text-center{
+  text-align: center;
+}
+
+h1{
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue';
+  font-size: 2.9rem;
+  font-style: bold;
+  font-weight: 400;
+  color: rgb(46, 39, 31);
+  text-transform: uppercase;
+}
+
+hr{
+  border-bottom: 4px solid rgb(46, 39, 31);
+  padd
+  display: block;
+  opacity: 1;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+}
+
+.diary-card {
+  margin: 10px;
+}
+
+/*body {
   background-color: #f4f3e1;
   max-width: 600px;
   width: 100%;
@@ -14,9 +59,9 @@ body {
 h1 {
   text-align: center;
   font-size: 3rem;
-}
+}*/
 
-#todo-input-container {
+/*#todo-input-container {
   width: 100%;
   display: flex;
   align-items: center;
@@ -102,3 +147,4 @@ textarea#todo-description-input {
 .todo-item button:hover {
   background-color: #f77;
 }
+*/
