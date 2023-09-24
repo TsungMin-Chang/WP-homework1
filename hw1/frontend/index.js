@@ -23,7 +23,7 @@ function setupEventListeners() {
   const feelingInput = document.querySelector("#feeling-input");
   const categoryInput = document.querySelector("#category-input");
   const descriptionInput = document.querySelector("#floatingTextarea2");
-  const preview = document.querySelector(".image-preview");
+  // const preview = document.querySelector(".image-preview");
   const filter = document.querySelector("#filter-input");
   
   function readAsDataURL(file) {
@@ -80,7 +80,7 @@ function setupEventListeners() {
     while (diaryBoard.firstChild) {
         diaryBoard.removeChild(diaryBoard.firstChild);
     }
-    filterInput = parseInt(filter.value);
+    const filterInput = parseInt(filter.value);
     try {
       const diaries = await getDiaries();
       if ( filterInput < 4 ) {
@@ -201,7 +201,7 @@ async function viewDiaryCard(id) {
     categoryUpdateInput.value = "";
     descriptionUpdateInput.value = "";
     location.reload();
-    updateButton.blur();
+    updateSubmitButton.blur();
   });
   // Delete Button
   const deleteButton = item.querySelector("button.delete-diary-card");
