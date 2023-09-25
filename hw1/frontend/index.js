@@ -132,6 +132,8 @@ function setupEventListeners() {
           } else {
             diaryCard.style.display = "none";
           }
+        } else {
+          diaryCard.style.display = "block";
         }
       }
     } catch (error) {
@@ -286,7 +288,7 @@ async function viewDiaryCard(id) {
     }
 
     description.innerText = descriptionUpdate
-    
+
     deleteButton.style.display = 'none';
     updateButton.style.display = 'none';
   });

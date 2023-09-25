@@ -61,7 +61,7 @@
                 </div>
                 <br/>
                 <div class="mb-3 text-left">
-                  <label for="formFile" class="form-label">Choose file:</label>
+                  <label for="formFile" class="form-label">Choose file (cannot exceed 64 kB):</label>
                   <input class="form-control" type="file" id="formFile">
                 </div>
                 <div>
@@ -79,6 +79,7 @@
     <br/>
     <select id="filter-input" class="form-select" aria-label="Default select example" style="background-color: rgb(46, 39, 31); color: white;">
       <option selected>You may choose a filter:</option>
+      <option value="100">All</option>
       <option value="1">Happy</option>
       <option value="2">Angry</option>
       <option value="3">Sad</option>
