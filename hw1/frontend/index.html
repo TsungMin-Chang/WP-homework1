@@ -70,7 +70,7 @@
               </form>
             </div>
             <div class="modal-footer">
-              <button type="button" id="diary-submit" class="btn btn-dark">Submit</button>
+              <button type="button" id="diary-submit" class="btn btn-dark">Save</button>
             </div>
           </div>
         </div>
@@ -102,6 +102,8 @@
         </ul>
         <div class="diary-description" style="display: none;">Hidden Description</div>
         <div class="diary-image" style="display: none;">Hidden Image Src</div>
+        <div class="diary-feeling-number" style="display: none;">Hidden Feeling Number</div>
+        <div class="diary-category-number" style="display: none;">Hidden Category Number</div>
       </div>
     </div>
   </template>
@@ -120,7 +122,7 @@
                 <div class="modal-content">
                   <div class="modal-header">
                     <h1 class="modal-title fs-5" id="exampleModalLabel">Updating an old diary</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" id="update-window-close-button" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
                     <form>
@@ -145,7 +147,7 @@
                     </form>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-dark detail-update-submit">Submit</button>
+                    <button type="button" class="btn btn-dark detail-update-submit">Save</button>
                   </div>
                 </div>
               </div>

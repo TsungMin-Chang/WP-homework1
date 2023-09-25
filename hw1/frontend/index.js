@@ -48,11 +48,22 @@ function setupEventListeners() {
     const description = descriptionInput.value;
     const imageInput = document.querySelector("input[type=file]").files[0];
     
-    if ( !inputValidation(feeling, category, description) ) return;
+    if ( isNaN(feeling) ) {
+      alert("Please select a feeling!");
+      return;
+    }
+    if ( isNaN(category) ) {
+      alert("Please select a category!");
+      return;
+    }
+    if ( !description ) {
+      alert("Please give an English description!");
+      return;
+    }
 
     try {
       if (imageInput) {
-        const base64String = await readAsDataURL(imageInput); // Assuming you have a readAsDataURL function (as shown in a previous response)
+        const base64String = await readAsDataURL(imageInput);
         // preview.src = base64String; 
         // console.log(preview.src);
         const diary = await createDiary({ feeling, category, description, image: base64String });
@@ -75,27 +86,54 @@ function setupEventListeners() {
   });
 
   filter.addEventListener("change", async () => {
-    // console.log(filter.value);
-    // remove all diary cards from diaryBoard
-    while (diaryBoard.firstChild) {
-        diaryBoard.removeChild(diaryBoard.firstChild);
-    }
+    console.log(filter.value);
     const filterInput = parseInt(filter.value);
     try {
-      const diaries = await getDiaries();
-      if ( filterInput < 4 ) {
-        diaries.forEach((diary) => { 
-          if ( diary.feeling === filterInput ) {
-            renderDiary(diary);
+      for (const diaryCard of diaryBoard.children) {
+        if ( filterInput === 1 ) {
+          const feeling = diaryCard.getElementsByClassName("diary-feeling")[0].innerHTML;
+          if ( feeling === "Happy" ) {
+            diaryCard.style.display = "block";
+          } else {
+            diaryCard.style.display = "none";
           }
-        })
-      } else {
-        diaries.forEach((diary) => { 
-          if ( diary.category === filterInput - 3 ) {
-            renderDiary(diary);
+        } else if ( filterInput === 2 ) {
+          const feeling = diaryCard.getElementsByClassName("diary-feeling")[0].innerHTML;
+          if ( feeling === "Angry" ) {
+            diaryCard.style.display = "block";
+          } else {
+            diaryCard.style.display = "none";
           }
-        })
-      };
+        } else if ( filterInput === 3 ) {
+          const feeling = diaryCard.getElementsByClassName("diary-feeling")[0].innerHTML;
+          if ( feeling === "Sad" ) {
+            diaryCard.style.display = "block";
+          } else {
+            diaryCard.style.display = "none";
+          }
+        } else if ( filterInput === 4 ) {
+          const category = diaryCard.getElementsByClassName("diary-category")[0].innerHTML;
+          if ( category === "Academic" ) {
+            diaryCard.style.display = "block";
+          } else {
+            diaryCard.style.display = "none";
+          }
+        } else if ( filterInput === 5 ) {
+          const category = diaryCard.getElementsByClassName("diary-category")[0].innerHTML;
+          if ( category === "Social-life" ) {
+            diaryCard.style.display = "block";
+          } else {
+            diaryCard.style.display = "none";
+          }
+        } else if ( filterInput === 6 ) {
+          const category = diaryCard.getElementsByClassName("diary-category")[0].innerHTML;
+          if ( category === "Student-Organization" ) {
+            diaryCard.style.display = "block";
+          } else {
+            diaryCard.style.display = "none";
+          }
+        }
+      }
     } catch (error) {
       alert("Failed to apply filter!");
     }
@@ -120,6 +158,9 @@ function createDiaryCard(diary) {
   const day = dayMap[temp.getDay()];
   updateTime.innerText = date + ' (' + day + ')';
   const feeling = item.querySelector(".diary-feeling");
+  // Create hidden feeling number to grab later
+  const feelingNum = item.querySelector(".diary-feeling-number");
+  feelingNum.innerText = diary.feeling;
   if (diary.feeling === 1) {
     feeling.innerText = "Happy";
   } else if (diary.feeling === 2) {
@@ -128,6 +169,9 @@ function createDiaryCard(diary) {
     feeling.innerText = "Sad";
   }
   const category = item.querySelector(".diary-category");
+  // Create hidden category number to grab later
+  const categoryNum = item.querySelector(".diary-category-number");
+  categoryNum.innerText = diary.category;
   if (diary.category === 1) {
     category.innerText = "Academic";
   } else if (diary.category === 2) {
@@ -170,8 +214,8 @@ async function viewDiaryCard(id) {
   const description = item.querySelector(".detail-description");
   description.innerText = diary.getElementsByClassName("diary-description")[0].innerHTML;
   const image = item.querySelector("img.detail-image");
-  // console.log(diary.getElementsByClassName("diary-image")[0].innerHTML);
   image.src = diary.getElementsByClassName("diary-image")[0].innerHTML;
+  
   // Insert place holders
   const feelingField = item.querySelector("#feeling-place-holder");
   feelingField.innerText = feeling.innerHTML;
@@ -179,63 +223,96 @@ async function viewDiaryCard(id) {
   categoryField.innerText = category.innerHTML;
   const descriptionField = item.querySelector(".form-control");
   descriptionField.value = description.innerHTML;
+  
   // Update Submit Button
   const updateSubmitButton = item.querySelector("button.detail-update-submit");
   const feelingUpdateInput = item.querySelector("#feeling-update");
   const categoryUpdateInput = item.querySelector("#category-update");
   const descriptionUpdateInput = item.querySelector(".form-control");
+  const updateWindowCloseButton = item.querySelector("#update-window-close-button");
+  const updateButton = item.querySelector("#diary-update");
+  
   updateSubmitButton.addEventListener("click", async () => {
-    const feeling = feelingUpdateInput.value;
-    const category = categoryUpdateInput.value;
-    const description = descriptionUpdateInput.value;
-    // image ??
-    if ( !inputValidation(feeling, category, description) ) return;
+
+    // User cannot update image
+
+    const feelingNum = diary.getElementsByClassName("diary-feeling-number")[0].innerHTML;
+    const categoryNum = diary.getElementsByClassName("diary-category-number")[0].innerHTML;
+    let feelingUpdate = feelingUpdateInput.value;
+    let categoryUpdate = categoryUpdateInput.value;
+    const descriptionUpdate = descriptionUpdateInput.value;
+    
+    if ( isNaN( feelingUpdate ) ) {
+      feelingUpdate = feelingNum;
+    }
+    if ( isNaN( categoryUpdate ) ) {
+      categoryUpdate = categoryNum; 
+    }
+    if ( !descriptionUpdate ) {
+      alert("Please give an English description!");
+      return;
+    }
+    
     try {
-      const diary = await updateDiaryStatus( id, { feeling, category, description } );
-      renderDiary(diary);
+      if ( image.src === "https://wallpapers.com/images/featured/harry-potter-gi5aixvd4d26cpij.jpg" ) {
+        await updateDiaryStatus( id, { feeling: feelingUpdate, category: categoryUpdate, description: descriptionUpdate } );
+      } else {
+        await updateDiaryStatus( id, { feeling: feelingUpdate, category: categoryUpdate, description: descriptionUpdate, image: image.src });
+      }
     } catch (error) {
       alert("Failed to update a new diary!");
       return;
     }
+
     feelingUpdateInput.value = "";
     categoryUpdateInput.value = "";
     descriptionUpdateInput.value = "";
-    location.reload();
-    updateSubmitButton.blur();
+    updateWindowCloseButton.click();
+
+    if (feelingUpdate === 1) {
+      feeling.innerText = "Happy";
+    } else if (feelingUpdate === 2) {
+      feeling.innerText = "Angry";
+    } else if (feelingUpdate === 3) {
+      feeling.innerText = "Sad";
+    }
+
+    if (categoryUpdate === 1) {
+      category.innerText = "Academic";
+    } else if (categoryUpdate === 2) {
+      category.innerText = "Social-life";
+    } else if (categoryUpdate === 3) {
+      category.innerText = "Student-Organization";
+    }
+
+    description.innerText = descriptionUpdate
+    
+    deleteButton.style.display = 'none';
+    updateButton.style.display = 'none';
   });
+
   // Delete Button
   const deleteButton = item.querySelector("button.delete-diary-card");
   deleteButton.dataset.id = id;
   deleteButton.addEventListener("click", () => {
     deleteDiaryCard(id);
   });
+
   // Back Button
   const backButton = item.getElementById("diary-back-to-cards");
   backButton.addEventListener("click", () => {
     location.reload();
   });
-  // remove all diary cards from diaryBoard
-  while (diaryBoard.firstChild) {
-      diaryBoard.removeChild(diaryBoard.firstChild);
-  }
-  // add one detail card to diaryBoard
-  diaryBoard.appendChild(item);
-}
 
-function inputValidation(feeling, category, description) {
-  if ( isNaN(feeling) ) {
-    alert("Please select a feeling!");
-    return false;
+  // remove all diary cards from diaryBoard
+  for (const diaryCard of diaryBoard.children) {
+    diaryCard.style.display = 'none';
   }
-  if ( isNaN(category) ) {
-    alert("Please select a category!");
-    return false;
-  }
-  if ( !description ) {
-    alert("Please give an English description!");
-    return false;
-  }
-  return true;
+  // while (diaryBoard.firstChild) {
+  //     diaryBoard.removeChild(diaryBoard.firstChild);
+  // }
+  // add 1 detail page to diaryBoard
+  diaryBoard.appendChild(item);
 }
 
 async function deleteDiaryCard(id) {
