@@ -45,7 +45,6 @@ export function updateList(id: string, input: UpdateListPayload) {
 }
 
 export async function deleteCard(id: string) {
-  console.log('hioho', id);
   return client.delete<DeleteCardResponse>(`/cards/${id}`);
 }
 

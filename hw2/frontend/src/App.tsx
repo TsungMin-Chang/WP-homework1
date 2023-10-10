@@ -10,13 +10,14 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import CardList from "@/components/CardList";
 import HeaderBar from "@/components/HeaderBar";
 import NewListDialog from "@/components/NewListDialog";
-import DetailList from "@/components/DetailCard"
+import DetailList from "@/components/DetailList"
 import useCards from "@/hooks/useCards";
 
 function App() {
   const { lists, fetchLists, fetchCards } = useCards();
   const [detailListDisplay, setDetailListDisplay] = useState({'state':false, 'id':""});
   const [newListDialogOpen, setNewListDialogOpen] = useState(false);
+  const [clickDeleteButton, setClickDeleteButton] = useState(-1);
 
   useEffect(() => {
     fetchLists();
@@ -26,6 +27,11 @@ function App() {
   const handleListClick = (listId: string) => {
     setDetailListDisplay({'state':true, 'id':listId});
   };
+
+  const switchMode = () => {
+    const newState = clickDeleteButton * (-1);
+    setClickDeleteButton(newState);
+  }
 
   return (
     <>
@@ -44,20 +50,29 @@ function App() {
                   <AddIcon className="mr-2" />
                   Add
                 </Button>
-                <Button>
-                  <DeleteIcon />
-                  Delete
+                <Button onClick={switchMode}>
+                  { (clickDeleteButton === 1) ? (
+                    <>
+                      Done
+                    </> 
+                  ) : (
+                    <>
+                      <DeleteIcon />
+                      Delete
+                    </>
+                  )}
                 </Button>
               </ButtonGroup>
             </div>
             <main className="mx-auto flex max-h-full flex-row gap-6 px-24 py-12">
               <Box sx={{ flexGrow: 1 }}>
-                <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 2, sm: 4, md: 12 }}>
+                <Grid container spacing={{ xs: 2, sm: 2, md: 3, lg: 3 }} columns={{ xs: 2, sm: 4, md: 12, lg: 12 }}>
                   { lists.map((list) => (
-                    <Grid item xs={2} sm={2} md={3} key={list.id}>
+                    <Grid item xs={2} sm={2} md={3} lg={3} key={list.id}>
                       <CardList 
                         {...list}
                         onDetail={() => handleListClick(list.id)}
+                        deleteMode={clickDeleteButton}
                       />
                     </Grid>
                   ))}

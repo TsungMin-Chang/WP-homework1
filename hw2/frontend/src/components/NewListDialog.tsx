@@ -6,6 +6,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
 
 import useCards from "@/hooks/useCards";
 import { createList } from "@/utils/client";
@@ -18,12 +19,13 @@ type NewListDialogProps = {
 export default function NewListDialog({ open, onClose }: NewListDialogProps) {
   // using a ref to get the dom element is one way to get the value of a input
   // another way is to use a state variable and update it on change, which can be found in CardDialog.tsx
-  const textfieldRef = useRef<HTMLInputElement>(null);
+  const textfieldName = useRef<HTMLInputElement>(null);
+  const textfieldDescription = useRef<HTMLInputElement>(null);
   const { fetchLists } = useCards();
 
   const handleAddList = async () => {
     try {
-      await createList({ name: textfieldRef.current?.value ?? "" });
+      await createList({ name: textfieldName.current?.value ?? "", description: textfieldDescription.current?.value ?? "" });
       fetchLists();
     } catch (error) {
       alert("Error: Failed to create list");
@@ -37,12 +39,29 @@ export default function NewListDialog({ open, onClose }: NewListDialogProps) {
       <DialogTitle>Add a list</DialogTitle>
       <DialogContent>
         <TextField
-          inputRef={textfieldRef}
+          inputRef={textfieldName}
           label="List Name"
           variant="outlined"
           sx={{ mt: 2 }}
           autoFocus
         />
+        <br />
+        <Box
+          sx={{
+            width: 500,
+            maxWidth: '100%',
+          }}
+        >
+          <TextField
+            inputRef={textfieldDescription}
+            label="List Description"
+            id="fullWidth"
+            variant="outlined"
+            sx={{ mt: 2 }}
+            autoFocus
+            fullWidth
+          />
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleAddList}>add</Button>

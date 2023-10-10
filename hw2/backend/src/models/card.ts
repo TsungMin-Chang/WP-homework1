@@ -18,7 +18,11 @@ const CardSchema = new mongoose.Schema<CardDocument>(
       type: String,
       required: true,
     },
-    description: {
+    singer: {
+      type: String,
+      required: true,
+    },
+    link: {
       type: String,
       required: true,
     },
