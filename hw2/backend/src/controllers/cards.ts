@@ -65,25 +65,33 @@ export const createCard = async (
   try {
     const { title, singer, link, list_id } = req.body;
 
-    // Check if the list exists
-    const list = await ListModel.findById(list_id);
-    if (!list) {
-      return res.status(404).json({ error: "list_id is not valid" });
-    }
+    const list_id_array: string[] = list_id.split('_');
 
-    const card = await CardModel.create({
-      title,
-      singer,
-      link,
-      list_id,
+    const card = await CardModel.create(list_id_array.map((listId) => {
+      return ({
+        title,
+        singer,
+        link,
+        list_id: listId,
+      })
+    }));
+
+    list_id_array.map( async (listId, index) => {
+
+      // Check if the list exists
+      const list = await ListModel.findById(listId);
+      if (!list) {
+        return res.status(404).json({ error: "list_id is not valid" });
+      }
+
+      // Add the card to the list
+      list.cards.push(card[index]._id);
+      await list.save();
+
     });
 
-    // Add the card to the list
-    list.cards.push(card._id);
-    await list.save();
-
     return res.status(201).json({
-      id: card.id as string,
+      id: card[0].id as string,
     });
   } catch (error) {
     // Check the type of error
