@@ -21,11 +21,24 @@ export default function NewListDialog({ open, onClose }: NewListDialogProps) {
   // another way is to use a state variable and update it on change, which can be found in CardDialog.tsx
   const textfieldName = useRef<HTMLInputElement>(null);
   const textfieldDescription = useRef<HTMLInputElement>(null);
-  const { fetchLists } = useCards();
+  const { lists, fetchLists } = useCards();
+  const existedListNames = lists.map((list) => {return list.name})
 
   const handleAddList = async () => {
+    if (!textfieldName.current!.value) {
+      alert("Name cannot be blank!")
+      return;
+    }
+    if (!textfieldDescription.current!.value) {
+      alert("Description cannot be blank!")
+      return;
+    }
+    if (existedListNames.includes(textfieldName.current!.value)) {
+      alert("This name has been used by another list! Please choose another name.");
+      return;
+    }
     try {
-      await createList({ name: textfieldName.current?.value ?? "", description: textfieldDescription.current?.value ?? "" });
+      await createList({ name: textfieldName.current!.value, description: textfieldDescription.current!.value });
       fetchLists();
     } catch (error) {
       alert("Error: Failed to create list");

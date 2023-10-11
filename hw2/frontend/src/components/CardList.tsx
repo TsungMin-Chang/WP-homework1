@@ -28,11 +28,18 @@ export type CardListProps = {
   name: string;
   description: string;
   cards: CardProps[];
+};
+
+type CardListPropsInner = {
+  id: string;
+  name: string;
+  description: string;
+  cards: CardProps[];
   onDetail: () => void;
   deleteMode: number;
 };
 
-export default function CardList({ id, name, cards, onDetail, deleteMode }: CardListProps) {
+export default function CardList({ id, name, cards, onDetail, deleteMode }: CardListPropsInner) {
   const [edittingName, setEdittingName] = useState(false);
   
   const { fetchLists } = useCards();
@@ -66,7 +73,7 @@ export default function CardList({ id, name, cards, onDetail, deleteMode }: Card
   const editName = (event: React.MouseEvent<HTMLElement>) => {
     setEdittingName(true); 
     event.stopPropagation();
-  }
+  };
   
   return (
     <>

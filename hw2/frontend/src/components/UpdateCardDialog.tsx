@@ -9,8 +9,6 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import Input from "@mui/material/Input";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Box from '@mui/material/Box';
@@ -34,19 +32,35 @@ type UpdateCardDialogProps = {
 
 export default function UpdateCardDialog(props: UpdateCardDialogProps) {
   const { open, onClose, listId, id, title, singer, link } = props;
+  const { lists, fetchCards } = useCards();
 
   const [edittingTitle, setEdittingTitle] = useState(false);
   // using a state variable to store the value of the input, and update it on change is another way to get the value of a input
   // however, this method is not recommended for large forms, as it will cause a re-render on every change
   // you can read more about it here: https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable
   const [newTitle, setNewTitle] = useState(title);
-  const [newListId, setNewListId] = useState(listId);
   const textfieldSinger = useRef<HTMLInputElement>(null);
   const textfieldLink = useRef<HTMLInputElement>(null);
-
-  const { lists, fetchCards } = useCards();
+  const existedCardNames = lists.map((list) => {return list.cards.map((card) => {return card.title})}).flat();
+  existedCardNames.filter((cardName) => cardName !== title);
 
   const handleSave = async () => {
+    if (!newTitle) {
+      alert("Title cannot be blank!");
+      return;
+    }
+    if (!textfieldSinger.current!.value) {
+      alert("Singer cannot be blank!");
+      return;
+    }
+    if (!textfieldLink.current!.value) {
+      alert("Link cannot be blank!");
+      return;
+    }
+    if (existedCardNames.includes(newTitle)) {
+      alert("This name has been used by another card! Please choose another name.");
+      return;
+    }
     try {
         if ( newTitle === title && 
             textfieldSinger.current?.value === singer && 
@@ -54,8 +68,8 @@ export default function UpdateCardDialog(props: UpdateCardDialogProps) {
         ) return
         await updateCard(id, {
           title: newTitle,
-          singer: textfieldSinger.current?.value ?? "",
-          link: textfieldLink.current?.value ?? "",
+          singer: textfieldSinger.current!.value,
+          link: textfieldLink.current!.value,
           list_id: listId,
         });
         setNewTitle("");
@@ -101,16 +115,6 @@ export default function UpdateCardDialog(props: UpdateCardDialogProps) {
             <Typography className="text-start">{title}</Typography>
           </button>
         )}
-        <Select
-          value={newListId}
-          onChange={(e) => setNewListId(e.target.value)}
-        >
-          {lists.map((list) => (
-            <MenuItem value={list.id} key={list.id}>
-              {list.name}
-            </MenuItem>
-          ))}
-        </Select>
         <IconButton color="error" onClick={handleDelete}>
             <DeleteIcon />
         </IconButton>

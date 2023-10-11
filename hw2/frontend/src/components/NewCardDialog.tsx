@@ -32,17 +32,36 @@ export default function NewCardDialog(props: NewCardDialogProps) {
   // you can read more about it here: https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable
   const [title, setTitle] = useState("");
   const [newListId, setNewListId] = useState(listId);
-  const { lists, fetchCards } = useCards();
+  const { lists, fetchCards, fetchLists } = useCards();
   const textfieldSinger = useRef<HTMLInputElement>(null);
   const textfieldLink = useRef<HTMLInputElement>(null);
+  fetchLists();
+  const existedCardNames = (lists.map((list) => { return list.cards.map((card) => {return card.title})})).flat();
 
   const handleSave = async () => {
+    if (!title) {
+      alert("Title cannot be blank!");
+      return;
+    }
+    if (!textfieldSinger.current!.value) {
+      alert("Singer cannot be blank!");
+      return;
+    }
+    if (!textfieldLink.current!.value) {
+      alert("Link cannot be blank!");
+      return;
+    }
+    if (title !== "" && existedCardNames.includes(title)) {
+      alert("This name has been used by another card! Please choose another name.");
+      return;
+    }
     try {
+      const sendId = newListId === listId ? listId : listId + '_' + newListId;
       await createCard({
         title: title,
-        singer: textfieldSinger.current?.value ?? "",
-        link: textfieldLink.current?.value ?? "",
-        list_id: listId,
+        singer: textfieldSinger.current!.value,
+        link: textfieldLink.current!.value,
+        list_id: sendId,
       });
       setTitle("");
       fetchCards();
@@ -52,6 +71,11 @@ export default function NewCardDialog(props: NewCardDialogProps) {
       onClose();
     }
   };
+
+  const handleClose = () => {
+    setTitle(""); 
+    onClose();
+  }
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -105,7 +129,7 @@ export default function NewCardDialog(props: NewCardDialogProps) {
         </Box>
         <DialogActions>
           <Button onClick={handleSave}>save</Button>
-          <Button onClick={onClose}>close</Button>
+          <Button onClick={handleClose}>close</Button>
         </DialogActions>
       </DialogContent>
     </Dialog>

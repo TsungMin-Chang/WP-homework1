@@ -51,7 +51,7 @@ export function CardProvider({ children }: CardProviderProps) {
       alert("Error: failed to fetch cards");
     }
   }, []);
-  
+
   const lists = useMemo(() => {
     // you can do functional-ish programming in JS too
     const listMap = rawLists.reduce(
@@ -61,7 +61,6 @@ export function CardProvider({ children }: CardProviderProps) {
       },
       {} as Record<string, CardListProps>,
     );
-    console.log(listMap)
     // or you can do for loops
     for (const card of rawCards) {
       const list = listMap[card.list_id];
