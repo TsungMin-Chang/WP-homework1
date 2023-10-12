@@ -84,7 +84,7 @@ const AuthLayout = () => {
                 className="last-of-type:border-r-0"
                 data-testid={`tab-${tab.path}`}
               >
-                <NavLink to={tab.path} content={tab.title} />
+                <NavLink to={tab.path} content={tab.title}>{tab.title}</NavLink>
               </TabsTrigger>
               /* End of TODO 1.3 */
             ))}
@@ -97,8 +97,8 @@ const AuthLayout = () => {
             {/* The logo should be vscoddit.svg in the public folder. */}
             {/* The logo should have alt text "VSCoddit Logo". */}
             {/* The title should be "VSCoddit" */}
-            <span data-testid="header-title" >VSCoddit</span>
             <img src="vscoddit.svg" data-testid="header-logo" className="h-5 w-5 brightness-200" alt="VSCoddit Logo" />
+            <span data-testid="header-title">VSCoddit</span>
             {/* END of TODO 1.1 */}
           </CardTitle>
           <CardDescription>
@@ -112,6 +112,8 @@ const AuthLayout = () => {
             <div className="flex flex-col gap-2">
               <Label htmlFor="username">Username</Label>
               {username ? (
+                <></>
+              ) : (
                 <Input
                   id="username"
                   data-testid="input-username"
@@ -121,8 +123,6 @@ const AuthLayout = () => {
                   placeholder="Enter Username"
                   required={true}
                 />
-              ) : (
-                <></>
               )}
               {/* TODO 1.4: Login Fails for Unregistered Users (8%) */}
               {/* You can think of `Input` as the `input` tag. */}
@@ -134,6 +134,8 @@ const AuthLayout = () => {
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Password</Label>
               {password ? (
+                <></>
+              ) : (
                 <Input
                   id="password"
                   data-testid="input-password"
@@ -143,8 +145,6 @@ const AuthLayout = () => {
                   placeholder="Enter Password"
                   required={true}
                 />
-              ) : (
-                <></>
               )}
               {/* TODO 1.4: Login Fails for Unregistered Users (8%) */}
               {/* You can think of `Input` as the `input` tag. */}
@@ -162,6 +162,8 @@ const AuthLayout = () => {
             >
               <Label htmlFor="confirm-password">Confirm Password</Label>
               {confirmPassword ? (
+                <></>
+              ) : (
                 <Input
                   id="confirm-password"
                   data-testid="input-confirm-password"
@@ -171,8 +173,6 @@ const AuthLayout = () => {
                   placeholder="Confirm Password"
                   required={true}
                 />
-              ) : (
-                <></>
               )}
               {/* TODO 1.5: Ensure User Registration Functions Properly (8%) */}
               {/* You can think of `Input` as the `input` tag. */}
