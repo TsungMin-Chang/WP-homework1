@@ -36,7 +36,7 @@ const View = (): React.ReactNode => {
   const handleVoteClick = (vote: 'upvote' | 'downvote') => {
     if (post === null || user === null) return false;
     /* Hint 2.4.3: Call some exported function from `PostContext` */
-    votePost(post, vote, user._id);
+    votePost(selectedIndex, user._id, vote);
   };
   /* End of (2/3) TODO 2.4 */
 
@@ -81,7 +81,7 @@ const View = (): React.ReactNode => {
           hasUpvoted={false}
           nextClickHandler={handleNextClick}
           prevClickHandler={handlePrevClick}
-          totalVotes={votes.length}
+          totalVotes={post.upvotes.length - post.downvotes.length}
           loading={false}
         />
         {/* End (3/3) TODO 2.4 */}

@@ -16,8 +16,22 @@ import Register from '@/routes/auth/Register';
 import FAQ from '@/routes/settings/FAQ';
 import SettingsLayout from '@/routes/settings/Layout';
 import Profile from '@/routes/settings/Profile';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ProviderWrapper = (): React.ReactNode => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if the user is authenticated (you may have your own authentication logic)
+    const isAuthenticated = /* Your authentication check */ true;
+
+    // If not authenticated, navigate to the login page
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [navigate]);
+  
   return (
     <UserProvider>
       <PostsProvider>
