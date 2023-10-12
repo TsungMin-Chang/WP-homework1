@@ -46,6 +46,7 @@ const AppLayout = () => {
         </Tabs>
         <Outlet />
       </Card>
+      <Outlet />
     </>
   );
 };

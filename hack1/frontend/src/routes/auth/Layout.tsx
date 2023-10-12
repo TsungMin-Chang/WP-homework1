@@ -64,6 +64,7 @@ const AuthLayout = () => {
   };
 
   return (
+    <>
     <form onSubmit={onSubmit}>
       <Card className="w-sm border-none">
         <Tabs value={location.pathname}>
@@ -185,6 +186,7 @@ const AuthLayout = () => {
         <Outlet />
       </Card>
     </form>
+    </>
   );
 };
 
