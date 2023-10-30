@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 
 const client = new Client({
   connectionString: env.POSTGRES_URL,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000,
 });
 
 // to use top level await (await outside of an async function)

@@ -18,12 +18,11 @@ export default function ProfileButton() {
       // see src/components/NameDialog.tsx for more details
       onClick={() => router.push("/")}
     >
-      <UserAvatar />
+      <h1>Change user</h1>
       <div className="w-40 max-lg:hidden">
         <p className="text-sm font-bold">{username ?? "..."}</p>
         <p className="text-sm text-gray-500">{`@${handle}`}</p>
       </div>
-      <MoreHorizontal size={24} className="max-lg:hidden" />
     </button>
   );
 }

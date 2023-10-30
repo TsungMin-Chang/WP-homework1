@@ -3,6 +3,7 @@ import { eq, desc, isNull, sql } from "drizzle-orm";
 import NameDialog from "@/components/NameDialog";
 import Tweet from "@/components/Tweet";
 import TweetInput from "@/components/TweetInput";
+import ProfileButton from "@/components/ProfileButton";
 import { Separator } from "@/components/ui/separator";
 import { db } from "@/db";
 import { likesTable, tweetsTable, usersTable } from "@/db/schema";
@@ -137,9 +138,13 @@ export default async function Home({
   return (
     <>
       <div className="flex h-screen w-full max-w-2xl flex-col overflow-scroll pt-2">
-        <h1 className="mb-2 bg-white px-4 text-xl font-bold">Home</h1>
         <div className="w-full px-4 pt-3">
+          {/* display user name */}
+          {/* change user name */}
+          <ProfileButton />
+          {/* button to open dialog for adding new event */}
           <TweetInput />
+          {/* find an existing event */}
         </div>
         <Separator />
         {tweets.map((tweet) => (

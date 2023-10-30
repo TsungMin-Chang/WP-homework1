@@ -44,7 +44,6 @@ export default function RootLayout({
       {/* this applies the font to the whole page */}
       <body className={noto.className}>
         <div className="mx-auto flex max-w-6xl">
-          <Header />
           <main className="flex min-h-screen w-full">
             <Separator orientation="vertical" />
             {children}
