@@ -2,26 +2,29 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import {PostTweetRequest} from "../app/api/tweets/route";
+
 export default function useTweet() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const postTweet = async ({
-    handle,
+    userId,
     content,
+    timestart,
+    timeend,
     replyToTweetId,
-  }: {
-    handle: string;
-    content: string;
-    replyToTweetId?: number;
-  }) => {
+  } : PostTweetRequest) => {
+    if (loading) return;
     setLoading(true);
 
     const res = await fetch("/api/tweets", {
       method: "POST",
       body: JSON.stringify({
-        handle,
+        userId,
         content,
+        timestart,
+        timeend,
         replyToTweetId,
       }),
     });

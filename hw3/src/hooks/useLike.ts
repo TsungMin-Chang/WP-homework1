@@ -8,10 +8,10 @@ export default function useLike() {
 
   const likeTweet = async ({
     tweetId,
-    userHandle,
+    userId,
   }: {
     tweetId: number;
-    userHandle: string;
+    userId: number;
   }) => {
     if (loading) return;
     setLoading(true);
@@ -20,7 +20,7 @@ export default function useLike() {
       method: "POST",
       body: JSON.stringify({
         tweetId,
-        userHandle,
+        userId,
       }),
     });
 
@@ -35,19 +35,19 @@ export default function useLike() {
 
   const unlikeTweet = async ({
     tweetId,
-    userHandle,
+    userId,
   }: {
     tweetId: number;
-    userHandle: string;
+    userId: number;
   }) => {
     if (loading) return;
-
     setLoading(true);
+    
     const res = await fetch("/api/likes", {
       method: "DELETE",
       body: JSON.stringify({
         tweetId,
-        userHandle,
+        userId,
       }),
     });
 

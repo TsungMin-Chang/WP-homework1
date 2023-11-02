@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   index,
   integer,
+  bigint,
   pgTable,
   serial,
   timestamp,
@@ -28,14 +29,14 @@ export const usersTable = pgTable(
     // waste space in the database. It is also a good idea to move as much constraints
     // to the database as possible, so that you don't have to worry about them in
     // your application code.
-    handle: varchar("handle", { length: 50 }).notNull().unique(),
+    // handle: varchar("handle", { length: 50 }).notNull().unique(),
     displayName: varchar("display_name", { length: 50 }).notNull(),
   },
   (table) => ({
     // indexes are used to speed up queries. Good indexes can make your queries
     // run orders of magnitude faster. learn more about indexes here:
     // https://planetscale.com/learn/courses/mysql-for-developers/indexes/introduction-to-indexes
-    handleIndex: index("handle_index").on(table.handle),
+    idIndex: index("id_index").on(table.id),
   }),
 );
 
@@ -44,14 +45,16 @@ export const tweetsTable = pgTable(
   {
     id: serial("id").primaryKey(),
     content: varchar("content", { length: 280 }).notNull(),
-    userHandle: varchar("user_handle", { length: 50 })
+    timestart: bigint("time_start", { mode: 'number' }),
+    timeend: bigint("time_end", { mode: 'number' }),
+    userId: integer("user_id")
       .notNull()
-      // this is a foreign key constraint. It ensures that the user_handle
-      // column in this table references a valid user_handle in the users table.
+      // this is a foreign key constraint. It ensures that the user_id
+      // column in this table references a valid user_id in the users table.
       // We can also specify what happens when the referenced row is deleted
       // or updated. In this case, we want to delete the tweet if the user
       // is deleted, so we use onDelete: "cascade". It is similar for onUpdate.
-      .references(() => usersTable.handle, {
+      .references(() => usersTable.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
@@ -59,7 +62,7 @@ export const tweetsTable = pgTable(
     createdAt: timestamp("created_at").default(sql`now()`),
   },
   (table) => ({
-    userHandleIndex: index("user_handle_index").on(table.userHandle),
+    userIdIndex: index("user_id_index").on(table.userId),
     createdAtIndex: index("created_at_index").on(table.createdAt),
     // we can even set composite indexes, which are indexes on multiple columns
     // learn more about composite indexes here:
@@ -75,19 +78,19 @@ export const likesTable = pgTable(
   "likes",
   {
     id: serial("id").primaryKey(),
-    userHandle: varchar("user_handle", { length: 50 })
+    userId: integer("user_id")
       .notNull()
-      .references(() => usersTable.handle, { onDelete: "cascade" }),
+      .references(() => usersTable.id, { onDelete: "cascade" }),
     tweetId: integer("tweet_id")
       .notNull()
       .references(() => tweetsTable.id, { onDelete: "cascade" }),
   },
   (table) => ({
     tweetIdIndex: index("tweet_id_index").on(table.tweetId),
-    userHandleIndex: index("user_handle_index").on(table.userHandle),
+    userIdIndex: index("user_id_index").on(table.userId),
     // unique constraints ensure that there are no duplicate combinations of
     // values in the table. In this case, we want to ensure that a user can't
     // like the same tweet twice.
-    uniqCombination: unique().on(table.userHandle, table.tweetId),
+    uniqCombination: unique().on(table.userId, table.tweetId),
   }),
 );

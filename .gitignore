@@ -140,4 +140,6 @@ Thumbs.db
 ehthumbs.db
 .Spotlight-V100
 .Trashes
-*.swp
+*.swpgit 
+
+*/pg-data

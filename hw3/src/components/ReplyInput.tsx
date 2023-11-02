@@ -3,32 +3,31 @@
 import { useRef } from "react";
 
 import GrowingTextarea from "@/components/GrowingTextarea";
-import UserAvatar from "@/components/UserAvatar";
 import useTweet from "@/hooks/useTweet";
-import useUserInfo from "@/hooks/useUserInfo";
+import useUser from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
 
 type ReplyInputProps = {
   replyToTweetId: number;
-  replyToHandle: string;
 };
 
 export default function ReplyInput({
   replyToTweetId,
-  replyToHandle,
 }: ReplyInputProps) {
-  const { handle } = useUserInfo();
+  const { username, userid } = useUser();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { postTweet, loading } = useTweet();
 
   const handleReply = async () => {
+    if (!userid) return;
     const content = textareaRef.current?.value;
+    const userid_int = parseInt(userid);
     if (!content) return;
-    if (!handle) return;
+    if (!userid_int) return;
 
     try {
       await postTweet({
-        handle,
+        userId: userid_int,
         content,
         replyToTweetId,
       });
@@ -51,9 +50,8 @@ export default function ReplyInput({
     <div onClick={() => textareaRef.current?.focus()}>
       <div className="grid grid-cols-[fit-content(48px)_1fr] gap-4 px-4 pt-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <UserAvatar className="col-start-1 row-start-2 h-12 w-12" />
         <p className="col-start-2 row-start-1 text-gray-500">
-          Replying to <span className="text-brand">@{replyToHandle}</span>
+          {username} Say something...
         </p>
         <GrowingTextarea
           ref={textareaRef}

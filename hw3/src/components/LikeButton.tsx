@@ -12,17 +12,18 @@ type LikeButtonProps = {
   initialLikes: number;
   initialLiked?: boolean;
   tweetId: number;
-  handle?: string;
+  userId: number;
 };
 
 export default function LikeButton({
   initialLikes,
   initialLiked,
   tweetId,
-  handle,
+  userId,
 }: LikeButtonProps) {
   const [liked, setLiked] = useState(initialLiked);
   const [likesCount, setLikesCount] = useState(initialLikes);
+  
   const { likeTweet, unlikeTweet, loading } = useLike();
 
   const handleClick: EventHandler<MouseEvent> = async (e) => {
@@ -32,18 +33,18 @@ export default function LikeButton({
     // event propagation and prevent the default behavior of the event.
     e.stopPropagation();
     e.preventDefault();
-    if (!handle) return;
+    if (!userId) return;
     if (liked) {
       await unlikeTweet({
         tweetId,
-        userHandle: handle,
+        userId,
       });
       setLikesCount((prev) => prev - 1);
       setLiked(false);
     } else {
       await likeTweet({
         tweetId,
-        userHandle: handle,
+        userId,
       });
       setLikesCount((prev) => prev + 1);
       setLiked(true);

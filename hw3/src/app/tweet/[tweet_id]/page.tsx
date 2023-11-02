@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 import { eq, desc, sql, and } from "drizzle-orm";
 import {
   ArrowLeft,
-  MessageCircle,
-  MoreHorizontal,
-  Repeat2,
-  Share,
+  // MessageCircle,
+  // MoreHorizontal,
+  // Repeat2,
+  // Share,
 } from "lucide-react";
 
 import LikeButton from "@/components/LikeButton";
@@ -17,7 +17,6 @@ import Tweet from "@/components/Tweet";
 import { Separator } from "@/components/ui/separator";
 import { db } from "@/db";
 import { likesTable, tweetsTable, usersTable } from "@/db/schema";
-import { getAvatar } from "@/lib/utils";
 
 type TweetPageProps = {
   params: {
@@ -26,21 +25,21 @@ type TweetPageProps = {
   };
   searchParams: {
     // this came from the query string: ?username=madmaxieee
-    username?: string;
-    handle?: string;
+    username: string;
+    userid: number;
   };
 };
 
 // these two fields are always available in the props object of a page component
 export default async function TweetPage({
   params: { tweet_id },
-  searchParams: { username, handle },
+  searchParams: { username, userid },
 }: TweetPageProps) {
+
   // this function redirects to the home page when there is an error
   const errorRedirect = () => {
     const params = new URLSearchParams();
     username && params.set("username", username);
-    handle && params.set("handle", handle);
     redirect(`/?${params.toString()}`);
   };
 
@@ -69,8 +68,10 @@ export default async function TweetPage({
   const [tweetData] = await db
     .select({
       id: tweetsTable.id,
+      userId: tweetsTable.userId,
       content: tweetsTable.content,
-      userHandle: tweetsTable.userHandle,
+      timestart: tweetsTable.timestart,
+      timeend: tweetsTable.timeend,
       createdAt: tweetsTable.createdAt,
     })
     .from(tweetsTable)
@@ -112,25 +113,27 @@ export default async function TweetPage({
     .where(
       and(
         eq(likesTable.tweetId, tweet_id_num),
-        eq(likesTable.userHandle, handle ?? ""),
+        eq(likesTable.userId, userid),
       ),
     )
     .execute();
 
   const [user] = await db
     .select({
+      id: usersTable.id,
       displayName: usersTable.displayName,
-      handle: usersTable.handle,
     })
     .from(usersTable)
-    .where(eq(usersTable.handle, tweetData.userHandle))
+    .where(eq(usersTable.id, tweetData.userId))
     .execute();
 
   const tweet = {
     id: tweetData.id,
     content: tweetData.content,
+    timestart: tweetData.timestart,
+    timeend: tweetData.timeend,
     username: user.displayName,
-    handle: user.handle,
+    userid: user.id,
     likes: numLikes,
     createdAt: tweetData.createdAt,
     liked: Boolean(liked),
@@ -155,7 +158,7 @@ export default async function TweetPage({
         liked: sql<number>`1`.mapWith(Boolean).as("liked"),
       })
       .from(likesTable)
-      .where(eq(likesTable.userHandle, handle ?? "")),
+      .where(eq(likesTable.userId, userid)),
   );
 
   const replies = await db
@@ -163,8 +166,9 @@ export default async function TweetPage({
     .select({
       id: tweetsTable.id,
       content: tweetsTable.content,
+      replyToTweetId: tweetsTable.replyToTweetId,
       username: usersTable.displayName,
-      handle: usersTable.handle,
+      userid: usersTable.id,
       likes: likesSubquery.likes,
       createdAt: tweetsTable.createdAt,
       liked: likedSubquery.liked,
@@ -172,7 +176,7 @@ export default async function TweetPage({
     .from(tweetsTable)
     .where(eq(tweetsTable.replyToTweetId, tweet_id_num))
     .orderBy(desc(tweetsTable.createdAt))
-    .innerJoin(usersTable, eq(tweetsTable.userHandle, usersTable.handle))
+    .innerJoin(usersTable, eq(tweetsTable.userId, usersTable.id))
     .leftJoin(likesSubquery, eq(tweetsTable.id, likesSubquery.tweetId))
     .leftJoin(likedSubquery, eq(tweetsTable.id, likedSubquery.tweetId))
     .execute();
@@ -181,7 +185,7 @@ export default async function TweetPage({
     <>
       <div className="flex h-screen w-full max-w-2xl flex-col overflow-scroll pt-2">
         <div className="mb-2 flex items-center gap-8 px-4">
-          <Link href={{ pathname: "/", query: { username, handle } }}>
+          <Link href={{ pathname: "/", query: { username, userid } }}>
             <ArrowLeft size={18} />
           </Link>
         </div>
@@ -190,9 +194,6 @@ export default async function TweetPage({
             <div className="flex w-full gap-3">
               <div>
                 <p className="font-bold">{tweet.username ?? "..."}</p>
-                <p className="font-normal text-gray-500">
-                  @{tweet.handle ?? "..."}
-                </p>
               </div>
             </div>
           </div>
@@ -205,7 +206,7 @@ export default async function TweetPage({
           <Separator />
           <div className="my-2 flex items-center justify-between gap-4 text-gray-400">
             <LikeButton
-              handle={handle}
+              userId={tweet.userid}
               initialLikes={tweet.likes}
               initialLiked={tweet.liked}
               tweetId={tweet.id}
@@ -213,17 +214,18 @@ export default async function TweetPage({
           </div>
           <Separator />
         </div>
-        <ReplyInput replyToTweetId={tweet.id} replyToHandle={tweet.handle} />
+        <ReplyInput replyToTweetId={tweet.id} />
         <Separator />
         {replies.map((reply) => (
           <Tweet
             key={reply.id}
             id={reply.id}
             username={username}
-            handle={handle}
+            userid={userid}
             authorName={reply.username}
-            authorHandle={reply.handle}
             content={reply.content}
+            timestart={null}
+            timeend={null}
             likes={reply.likes}
             liked={reply.liked}
             createdAt={reply.createdAt!}

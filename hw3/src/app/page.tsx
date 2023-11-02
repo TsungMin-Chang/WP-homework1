@@ -1,8 +1,8 @@
 import { eq, desc, isNull, sql } from "drizzle-orm";
 
 import NameDialog from "@/components/NameDialog";
+import AddEventButton from "@/components/AddEventButton";
 import Tweet from "@/components/Tweet";
-import TweetInput from "@/components/TweetInput";
 import ProfileButton from "@/components/ProfileButton";
 import { Separator } from "@/components/ui/separator";
 import { db } from "@/db";
@@ -10,8 +10,8 @@ import { likesTable, tweetsTable, usersTable } from "@/db/schema";
 
 type HomePageProps = {
   searchParams: {
-    username?: string;
-    handle?: string;
+    username: string;
+    userid: number;
   };
 };
 
@@ -24,16 +24,20 @@ type HomePageProps = {
 // any where. There are already libraries that use react to render to the terminal,
 // email, PDFs, native mobile apps, 3D objects and even videos.
 export default async function Home({
-  searchParams: { username, handle },
+  searchParams: { username, userid }
 }: HomePageProps) {
+
+  console.log(username);
+  console.log(userid);
+
   // read the username and handle from the query params and insert the user
   // if needed.
-  if (username && handle) {
+  if (username && userid) {
     await db
       .insert(usersTable)
       .values({
         displayName: username,
-        handle,
+        id: userid,
       })
       // Since handle is a unique column, we need to handle the case
       // where the user already exists. We can do this with onConflictDoUpdate
@@ -41,7 +45,7 @@ export default async function Home({
       // This way we don't have to worry about checking if the user exists
       // before inserting them.
       .onConflictDoUpdate({
-        target: usersTable.handle,
+        target: usersTable.id,
         set: {
           displayName: username,
         },
@@ -108,7 +112,7 @@ export default async function Home({
         liked: sql<number>`1`.mapWith(Boolean).as("liked"),
       })
       .from(likesTable)
-      .where(eq(likesTable.userHandle, handle ?? "")),
+      .where(eq(likesTable.userId, userid)),
   );
 
   const tweets = await db
@@ -116,8 +120,9 @@ export default async function Home({
     .select({
       id: tweetsTable.id,
       content: tweetsTable.content,
+      timestart: tweetsTable.timestart,
+      timeend: tweetsTable.timeend,
       username: usersTable.displayName,
-      handle: usersTable.handle,
       likes: likesSubquery.likes,
       createdAt: tweetsTable.createdAt,
       liked: likedSubquery.liked,
@@ -130,7 +135,7 @@ export default async function Home({
     // read more about it here: https://orm.drizzle.team/docs/select#join
     // or watch this video:
     // https://planetscale.com/learn/courses/mysql-for-developers/queries/an-overview-of-joins
-    .innerJoin(usersTable, eq(tweetsTable.userHandle, usersTable.handle))
+    .innerJoin(usersTable, eq(tweetsTable.userId, usersTable.id))
     .leftJoin(likesSubquery, eq(tweetsTable.id, likesSubquery.tweetId))
     .leftJoin(likedSubquery, eq(tweetsTable.id, likedSubquery.tweetId))
     .execute();
@@ -140,10 +145,12 @@ export default async function Home({
       <div className="flex h-screen w-full max-w-2xl flex-col overflow-scroll pt-2">
         <div className="w-full px-4 pt-3">
           {/* display user name */}
+          <h1>{username}</h1> 
+          <br />
           {/* change user name */}
           <ProfileButton />
           {/* button to open dialog for adding new event */}
-          <TweetInput />
+          <AddEventButton />
           {/* find an existing event */}
         </div>
         <Separator />
@@ -152,10 +159,11 @@ export default async function Home({
             key={tweet.id}
             id={tweet.id}
             username={username}
-            handle={handle}
+            userid={userid}
             authorName={tweet.username}
-            authorHandle={tweet.handle}
             content={tweet.content}
+            timestart={tweet.timestart}
+            timeend={tweet.timeend}
             likes={tweet.likes}
             liked={tweet.liked}
             createdAt={tweet.createdAt!}

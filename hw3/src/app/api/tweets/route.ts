@@ -11,27 +11,31 @@ import { tweetsTable } from "@/db/schema";
 // zod's schema syntax is pretty intuitive,
 // read more about zod here: https://zod.dev/
 const postTweetRequestSchema = z.object({
-  handle: z.string().min(1).max(50),
+  userId: z.number(),
   content: z.string().min(1).max(280),
-  replyToTweetId: z.number().optional(),
+  timestart: z.number().optional(),
+  timeend: z.number().optional(),
+  replyToTweetId: z.number().positive().optional(),
 });
 
 // you can use z.infer to get the typescript type from a zod schema
-type PostTweetRequest = z.infer<typeof postTweetRequestSchema>;
+export type PostTweetRequest = z.infer<typeof postTweetRequestSchema>;
 
-// This API handler file would be trigger by http requests to /api/likes
+// This API handler file would be trigger by http requests to /api/tweets
 // POST requests would be handled by the POST function
 // GET requests would be handled by the GET function
 // etc.
 // read more about Next.js API routes here:
 // https://nextjs.org/docs/app/building-your-application/routing/route-handlers
 export async function POST(request: NextRequest) {
+
   const data = await request.json();
 
   try {
     // parse will throw an error if the data doesn't match the schema
     postTweetRequestSchema.parse(data);
   } catch (error) {
+    console.log('1', error);
     // in case of an error, we return a 400 response
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
@@ -40,7 +44,6 @@ export async function POST(request: NextRequest) {
   // the `as` keyword is a type assertion, this tells typescript
   // that we know what we're doing and that the data is of type LikeTweetRequest.
   // This is safe now because we've already validated the data with zod.
-  const { handle, content, replyToTweetId } = data as PostTweetRequest;
 
   try {
     // This piece of code runs the following SQL query:
@@ -53,15 +56,20 @@ export async function POST(request: NextRequest) {
     //  {content},
     //  {replyToTweetId}
     // )
+    const { userId, content, timestart, timeend, replyToTweetId } = data as PostTweetRequest;
+    console.log('looking at', data);
     await db
       .insert(tweetsTable)
       .values({
-        userHandle: handle,
         content,
-        replyToTweetId,
+        userId,
+        timestart,
+        timeend,
+        replyToTweetId
       })
       .execute();
   } catch (error) {
+    console.log('2', error);
     // The NextResponse object is a easy to use API to handle responses.
     // IMHO, it's more concise than the express API.
     return NextResponse.json(
