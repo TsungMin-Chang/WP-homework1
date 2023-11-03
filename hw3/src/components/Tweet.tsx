@@ -2,8 +2,7 @@ import Link from "next/link";
 
 import { Separator } from "@/components/ui/separator";
 
-import LikeButton from "./LikeButton";
-import TimeDisplay from "./TimeDisplay";
+import { Check } from "lucide-react";
 
 type TweetProps = {
   username?: string;
@@ -16,6 +15,7 @@ type TweetProps = {
   likes: number;
   createdAt: Date;
   liked?: boolean;
+  state: boolean
 };
 
 // note that the Tweet component is also a server component
@@ -26,10 +26,9 @@ export default function Tweet({
   id,
   authorName,
   content,
-  timestart,
-  timeend,
   likes,
   liked,
+  state,
 }: TweetProps) {
   
   return (
@@ -46,26 +45,20 @@ export default function Tweet({
       >
         <div className="flex gap-4">
           <article className="flex grow flex-col">
-            <p className="font-bold">
-              {authorName}
-              <time className="ml-2 font-normal text-gray-400">
-                {timestart && timeend && (
-                  <TimeDisplay 
-                    timestart={timestart}
-                    timeend={timeend}
-                  />
-                )}
-              </time>
-            </p>
+            {!state && (
+              <p className="font-bold">
+                {authorName}:
+              </p>
+            )}
             {/* `white-space: pre-wrap` tells html to render \n and \t chracters  */}
             <article className="mt-2 whitespace-pre-wrap">{content}</article>
             <div className="my-2 flex items-center justify-between gap-4 text-gray-400">
-              <LikeButton
-                userId={userid}
-                initialLikes={likes}
-                initialLiked={liked}
-                tweetId={id}
-              />
+              {state && liked  && (
+                <Check size={30} />
+              )}
+            </div>
+            <div className="my-2 flex items-center justify-between gap-4 text-gray-400">
+              { state && (<h1>{likes ? likes : 0} people</h1>) }
             </div>
           </article>
         </div>

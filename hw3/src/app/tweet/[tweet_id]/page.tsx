@@ -1,18 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { eq, desc, sql, and } from "drizzle-orm";
+import { eq, asc, sql, and } from "drizzle-orm";
 import {
-  ArrowLeft,
-  // MessageCircle,
-  // MoreHorizontal,
-  // Repeat2,
-  // Share,
+  ChevronLeft
 } from "lucide-react";
 
 import LikeButton from "@/components/LikeButton";
 import ReplyInput from "@/components/ReplyInput";
-import TimeText from "@/components/TimeText";
+import TimeDisplay from "@/components/TimeDisplay";
 import Tweet from "@/components/Tweet";
 import { Separator } from "@/components/ui/separator";
 import { db } from "@/db";
@@ -175,7 +171,7 @@ export default async function TweetPage({
     })
     .from(tweetsTable)
     .where(eq(tweetsTable.replyToTweetId, tweet_id_num))
-    .orderBy(desc(tweetsTable.createdAt))
+    .orderBy(asc(tweetsTable.createdAt))
     .innerJoin(usersTable, eq(tweetsTable.userId, usersTable.id))
     .leftJoin(likesSubquery, eq(tweetsTable.id, likesSubquery.tweetId))
     .leftJoin(likedSubquery, eq(tweetsTable.id, likedSubquery.tweetId))
@@ -186,35 +182,35 @@ export default async function TweetPage({
       <div className="flex h-screen w-full max-w-2xl flex-col overflow-scroll pt-2">
         <div className="mb-2 flex items-center gap-8 px-4">
           <Link href={{ pathname: "/", query: { username, userid } }}>
-            <ArrowLeft size={18} />
+            <ChevronLeft size={18} />
           </Link>
         </div>
         <div className="flex flex-col px-4 pt-3">
-          <div className="flex justify-between">
-            <div className="flex w-full gap-3">
-              <div>
-                <p className="font-bold">{tweet.username ?? "..."}</p>
-              </div>
-            </div>
-          </div>
           <article className="mt-3 whitespace-pre-wrap text-xl">
             {tweet.content}
+            <div className="my-4 block font-large text-sky-400">
+              {tweet.likes} people are participating.
+            </div>
           </article>
-          <time className="my-4 block text-sm text-gray-500">
-            <TimeText date={tweet.createdAt} format="h:mm A · D MMM YYYY" />
+          <time className="my-4 block font-normal text-gray-500">
+            {tweet.timestart && tweet.timeend && (
+              <TimeDisplay 
+                timestart={tweet.timestart}
+                timeend={tweet.timeend}
+              />
+            )} 
           </time>
           <Separator />
           <div className="my-2 flex items-center justify-between gap-4 text-gray-400">
             <LikeButton
-              userId={tweet.userid}
-              initialLikes={tweet.likes}
+              userId={parseInt(userid.toString())}
               initialLiked={tweet.liked}
               tweetId={tweet.id}
             />
           </div>
-          <Separator />
+          {tweet.liked && <Separator />}
         </div>
-        <ReplyInput replyToTweetId={tweet.id} />
+        <ReplyInput replyToTweetId={tweet.id} likeState={tweet.liked}/>
         <Separator />
         {replies.map((reply) => (
           <Tweet
@@ -229,6 +225,7 @@ export default async function TweetPage({
             likes={reply.likes}
             liked={reply.liked}
             createdAt={reply.createdAt!}
+            state={false}
           />
         ))}
       </div>

@@ -1,20 +1,15 @@
 "use client";
 
 import { useState } from "react";
-// import { useRouter } from "next/navigation";
 
 import AddEventDialog from "@/components/AddEventDialog";
 
-// import useUserInfo from "@/hooks/useUserInfo";
 import { cn } from "@/lib/utils";
 
 export default function ProfileButton() {
 
   const [openEventDialog, setOpenEventDialog] = useState(false);
   
-  // const { username, handle } = useUserInfo();
-  // const router = useRouter();
-
   return (
     <>
       <button

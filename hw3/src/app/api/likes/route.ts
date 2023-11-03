@@ -69,6 +69,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { tweetId, userId } = data as LikeTweetRequest;
+  
+  console.log('server route', tweetId, userId);
 
   try {
     await db

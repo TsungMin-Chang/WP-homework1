@@ -97,9 +97,9 @@ export default function NameDialog() {
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Welcome to Twitter!</DialogTitle>
+          <DialogTitle>Let's Join!</DialogTitle>
           <DialogDescription>
-            Tell us your name to start tweeting.
+            Tell us your name to start.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -108,7 +108,7 @@ export default function NameDialog() {
               Name
             </Label>
             <Input
-              placeholder="Web Programming"
+              placeholder="Harry Potter"
               defaultValue={searchParams.get("username") ?? ""}
               className={cn(usernameError && "border-red-500", "col-span-3")}
               ref={usernameInputRef}

@@ -15,7 +15,6 @@ export default function useLike() {
   }) => {
     if (loading) return;
     setLoading(true);
-
     const res = await fetch("/api/likes", {
       method: "POST",
       body: JSON.stringify({

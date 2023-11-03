@@ -143,3 +143,4 @@ ehthumbs.db
 *.swpgit 
 
 */pg-data
+*.sh

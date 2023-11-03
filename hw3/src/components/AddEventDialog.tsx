@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import useTweet from "@/hooks/useTweet";
 import useUser from "@/hooks/useUser";
+import useLike from "@/hooks/useLike";
 
 import FormControl from '@mui/material/FormControl';
 import Button from "@mui/material/Button";
@@ -27,9 +31,13 @@ type NewPublicationDialogProps = {
 
 export default function NewPublicationDialog({ open, onClose }: NewPublicationDialogProps) {
 
-  const { userid } = useUser();
-
+  const { username, userid } = useUser();
   const { postTweet, loading } = useTweet();
+  const { likeTweet } = useLike();
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const [title, setTitle] = useState<string>("");
   const [timeStart, setTimeStart] = useState<Dayjs | null>(null);
@@ -54,18 +62,39 @@ export default function NewPublicationDialog({ open, onClose }: NewPublicationDi
       return;
     }
 
+    if(timeStart.valueOf() >= timeEnd.valueOf()){
+      alert("Event start time should be earlier than the event end time!");
+      return;
+    }
+    
+    if(timeEnd.valueOf() - timeStart.valueOf() > 604800000){
+      alert("The event can only last for at most 7 days!");
+      return;
+    }
+    
     // console.log(userid_int);
     // console.log(timeStart['$d'].valueOf());
     // console.log(timeEnd['$d'].valueOf());
     // console.log(title);
 
     try {
-      await postTweet({
+      const tweetid = await postTweet({
         userId: userid_int,
         timestart: timeStart['$d'].valueOf(),
         timeend: timeEnd['$d'].valueOf(),
         content: title,
       });
+
+      await likeTweet({
+        tweetId: tweetid,
+        userId: parseInt(userid),
+      });
+
+      const params = new URLSearchParams(searchParams);
+      params.set("username", username!);
+      params.set("userid", userid.toString());
+      router.push(`${pathname}tweet/${tweetid}?${params.toString()}`);
+
       handleClose();
     } catch (e) {
       alert("Error posting tweet");
@@ -92,7 +121,7 @@ export default function NewPublicationDialog({ open, onClose }: NewPublicationDi
               value={title}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value as string)}
               className="grow"
-              placeholder="Enter a title..."
+              placeholder="Enter an event title..."
             />
           </ClickAwayListener>
         </FormControl>

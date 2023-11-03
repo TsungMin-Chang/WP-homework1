@@ -3,26 +3,23 @@
 import { useState } from "react";
 import type { EventHandler, MouseEvent } from "react";
 
-import { Heart } from "lucide-react";
 
 import useLike from "@/hooks/useLike";
 import { cn } from "@/lib/utils";
 
 type LikeButtonProps = {
-  initialLikes: number;
   initialLiked?: boolean;
   tweetId: number;
   userId: number;
 };
 
 export default function LikeButton({
-  initialLikes,
   initialLiked,
   tweetId,
   userId,
 }: LikeButtonProps) {
+
   const [liked, setLiked] = useState(initialLiked);
-  const [likesCount, setLikesCount] = useState(initialLikes);
   
   const { likeTweet, unlikeTweet, loading } = useLike();
 
@@ -39,36 +36,29 @@ export default function LikeButton({
         tweetId,
         userId,
       });
-      setLikesCount((prev) => prev - 1);
       setLiked(false);
     } else {
       await likeTweet({
         tweetId,
         userId,
       });
-      setLikesCount((prev) => prev + 1);
       setLiked(true);
     }
   };
 
   return (
     <button
-      className={cn(
-        "flex w-16 items-center gap-1 hover:text-brand",
-        liked && "text-brand",
+      className={liked ? cn(
+        "my-2 rounded-full bg-blue-900 px-4 py-2 text-white transition-colors hover:bg-brand/70",
+        "disabled:cursor-not-allowed disabled:bg-brand/40 disabled:hover:bg-brand/40"
+      ) : cn(
+        "my-2 rounded-full bg-brand px-4 py-2 text-white transition-colors hover:bg-brand/70",
+        "disabled:cursor-not-allowed disabled:bg-brand/40 disabled:hover:bg-brand/40"
       )}
       onClick={handleClick}
       disabled={loading}
     >
-      <div
-        className={cn(
-          "flex items-center gap-1 rounded-full p-1.5 transition-colors duration-300 hover:bg-brand/10",
-          liked && "bg-brand/10",
-        )}
-      >
-        <Heart size={18} />
-      </div>
-      {likesCount > 0 && likesCount}
+      {liked ? <h1>I had joined</h1> : <h1>I want to join</h1>}
     </button>
   );
 }

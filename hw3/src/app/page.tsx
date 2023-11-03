@@ -27,31 +27,28 @@ export default async function Home({
   searchParams: { username, userid }
 }: HomePageProps) {
 
-  console.log(username);
-  console.log(userid);
-
   // read the username and handle from the query params and insert the user
   // if needed.
-  if (username && userid) {
-    await db
-      .insert(usersTable)
-      .values({
-        displayName: username,
-        id: userid,
-      })
-      // Since handle is a unique column, we need to handle the case
-      // where the user already exists. We can do this with onConflictDoUpdate
-      // If the user already exists, we just update the display name
-      // This way we don't have to worry about checking if the user exists
-      // before inserting them.
-      .onConflictDoUpdate({
-        target: usersTable.id,
-        set: {
-          displayName: username,
-        },
-      })
-      .execute();
-  }
+  // if (username && userid) {
+  //   await db
+  //     .insert(usersTable)
+  //     .values({
+  //       displayName: username,
+  //       id: userid,
+  //     })
+  //     // Since handle is a unique column, we need to handle the case
+  //     // where the user already exists. We can do this with onConflictDoUpdate
+  //     // If the user already exists, we just update the display name
+  //     // This way we don't have to worry about checking if the user exists
+  //     // before inserting them.
+  //     .onConflictDoUpdate({
+  //       target: usersTable.id,
+  //       set: {
+  //         displayName: username,
+  //       },
+  //     })
+  //     .execute();
+  // }
 
   // This is a good example of using subqueries, joins, and with statements
   // to get the data we need in a single query. This is a more complicated
@@ -145,7 +142,7 @@ export default async function Home({
       <div className="flex h-screen w-full max-w-2xl flex-col overflow-scroll pt-2">
         <div className="w-full px-4 pt-3">
           {/* display user name */}
-          <h1>{username}</h1> 
+          <h1>User: {username}</h1> 
           <br />
           {/* change user name */}
           <ProfileButton />
@@ -167,6 +164,7 @@ export default async function Home({
             likes={tweet.likes}
             liked={tweet.liked}
             createdAt={tweet.createdAt!}
+            state={true}
           />
         ))}
       </div>

@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
     // parse will throw an error if the data doesn't match the schema
     postTweetRequestSchema.parse(data);
   } catch (error) {
-    console.log('1', error);
     // in case of an error, we return a 400 response
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
@@ -57,8 +56,7 @@ export async function POST(request: NextRequest) {
     //  {replyToTweetId}
     // )
     const { userId, content, timestart, timeend, replyToTweetId } = data as PostTweetRequest;
-    console.log('looking at', data);
-    await db
+    const tweetid = await db
       .insert(tweetsTable)
       .values({
         content,
@@ -67,9 +65,10 @@ export async function POST(request: NextRequest) {
         timeend,
         replyToTweetId
       })
+      .returning({ id: tweetsTable.id })
       .execute();
+    return NextResponse.json({ data: tweetid }, { status: 200 });
   } catch (error) {
-    console.log('2', error);
     // The NextResponse object is a easy to use API to handle responses.
     // IMHO, it's more concise than the express API.
     return NextResponse.json(
@@ -77,6 +76,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-
-  return new NextResponse("OK", { status: 200 });
 }
