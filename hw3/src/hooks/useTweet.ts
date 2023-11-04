@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
-import {PostTweetRequest} from "../app/api/tweets/route";
+import type { PostTweetRequest } from "../app/api/tweets/route";
 
 export default function useTweet() {
   const [loading, setLoading] = useState(false);

@@ -1,9 +1,10 @@
-import { eq, desc, isNull, sql } from "drizzle-orm";
+import { like, and, eq, desc, isNull, sql } from "drizzle-orm";
 
 import NameDialog from "@/components/NameDialog";
 import AddEventButton from "@/components/AddEventButton";
 import Tweet from "@/components/Tweet";
 import ProfileButton from "@/components/ProfileButton";
+import MySearchBar from "@/components/MySearchBar";
 import { Separator } from "@/components/ui/separator";
 import { db } from "@/db";
 import { likesTable, tweetsTable, usersTable } from "@/db/schema";
@@ -12,6 +13,7 @@ type HomePageProps = {
   searchParams: {
     username: string;
     userid: number;
+    keyword?: string;
   };
 };
 
@@ -24,7 +26,7 @@ type HomePageProps = {
 // any where. There are already libraries that use react to render to the terminal,
 // email, PDFs, native mobile apps, 3D objects and even videos.
 export default async function Home({
-  searchParams: { username, userid }
+  searchParams: { username, userid, keyword }
 }: HomePageProps) {
 
   // read the username and handle from the query params and insert the user
@@ -125,7 +127,13 @@ export default async function Home({
       liked: likedSubquery.liked,
     })
     .from(tweetsTable)
-    .where(isNull(tweetsTable.replyToTweetId))
+    .where( keyword && keyword !== "" ? 
+      and(
+        isNull(tweetsTable.replyToTweetId),
+        like(tweetsTable.content, '%' + keyword + '%'),
+      ) :
+      isNull(tweetsTable.replyToTweetId)
+    )
     .orderBy(desc(tweetsTable.createdAt))
     // JOIN is by far the most powerful feature of relational databases
     // it allows us to combine data from multiple tables into a single query
@@ -136,7 +144,7 @@ export default async function Home({
     .leftJoin(likesSubquery, eq(tweetsTable.id, likesSubquery.tweetId))
     .leftJoin(likedSubquery, eq(tweetsTable.id, likedSubquery.tweetId))
     .execute();
-
+  
   return (
     <>
       <div className="flex h-screen w-full max-w-2xl flex-col overflow-scroll pt-2">
@@ -148,8 +156,12 @@ export default async function Home({
           <ProfileButton />
           {/* button to open dialog for adding new event */}
           <AddEventButton />
-          {/* find an existing event */}
         </div>
+        {/* find an existing event */}
+        <MySearchBar
+          username = {username}
+          userid = {userid}
+        />
         <Separator />
         {tweets.map((tweet) => (
           <Tweet

@@ -144,3 +144,4 @@ ehthumbs.db
 
 */pg-data
 *.sh
+*/yarn.lock

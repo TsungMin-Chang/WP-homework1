@@ -56,7 +56,6 @@ export default function NameDialog() {
     }
 
     const userid: number = await postUser({displayName: username});
-
     // when navigating to the same page with different query params, we need to
     // preserve the pathname, so we need to manually construct the url
     // we can use the URLSearchParams api to construct the query string
