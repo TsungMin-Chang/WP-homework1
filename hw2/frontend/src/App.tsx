@@ -70,7 +70,7 @@ function App() {
                   { lists.map((list) => (
                     <Grid item xs={2} sm={2} md={3} lg={3} key={list.id}>
                       <CardList 
-                        {...list}
+                        {...list} 
                         onDetail={() => handleListClick(list.id)}
                         deleteMode={clickDeleteButton}
                       />
