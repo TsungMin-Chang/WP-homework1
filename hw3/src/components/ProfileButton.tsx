@@ -2,27 +2,23 @@
 
 import { useRouter } from "next/navigation";
 
-import { MoreHorizontal } from "lucide-react";
-
-import UserAvatar from "@/components/UserAvatar";
-import useUserInfo from "@/hooks/useUserInfo";
+// import useUserInfo from "@/hooks/useUserInfo";
+import { cn } from "@/lib/utils";
 
 export default function ProfileButton() {
-  const { username, handle } = useUserInfo();
   const router = useRouter();
 
   return (
     <button
-      className="flex items-center gap-2 rounded-full p-3 text-start transition-colors duration-300 hover:bg-gray-200"
+      className={cn(
+        "my-2 rounded-full bg-brand px-4 py-2 text-white transition-colors hover:bg-brand/70",
+        "disabled:cursor-not-allowed disabled:bg-brand/40 disabled:hover:bg-brand/40",
+      )}
       // go to home page without any query params to allow the user to change their username and handle
       // see src/components/NameDialog.tsx for more details
       onClick={() => router.push("/")}
     >
       <h1>Change user</h1>
-      <div className="w-40 max-lg:hidden">
-        <p className="text-sm font-bold">{username ?? "..."}</p>
-        <p className="text-sm text-gray-500">{`@${handle}`}</p>
-      </div>
     </button>
   );
 }

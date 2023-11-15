@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { and, eq, sql } from "drizzle-orm";
+
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -8,7 +9,7 @@ import { likesTable } from "@/db/schema";
 
 const likeTweetRequestSchema = z.object({
   tweetId: z.number().positive(),
-  userHandle: z.string().min(1).max(50),
+  userId: z.number().positive(),
 });
 
 type LikeTweetRequest = z.infer<typeof likeTweetRequestSchema>;
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
   // the `as` keyword is a type assertion, this tells typescript
   // that we know what we're doing and that the data is of type LikeTweetRequest.
   // This is safe now because we've already validated the data with zod.
-  const { tweetId, userHandle } = data as LikeTweetRequest;
+  const { tweetId, userId } = data as LikeTweetRequest;
 
   try {
     // This is a common pattern to check if a row exists
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
       .where(
         and(
           eq(likesTable.tweetId, tweetId),
-          eq(likesTable.userHandle, userHandle),
+          eq(likesTable.userId, userId),
         ),
       )
       .execute();
@@ -67,14 +68,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const { tweetId, userHandle } = data as LikeTweetRequest;
+  const { tweetId, userId } = data as LikeTweetRequest;
+  
+  console.log('server route', tweetId, userId);
 
   try {
     await db
       .insert(likesTable)
       .values({
         tweetId,
-        userHandle,
+        userId,
       })
       .onConflictDoNothing()
       .execute();
@@ -97,7 +100,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const { tweetId, userHandle } = data as LikeTweetRequest;
+  const { tweetId, userId } = data as LikeTweetRequest;
 
   try {
     await db
@@ -105,7 +108,7 @@ export async function DELETE(request: NextRequest) {
       .where(
         and(
           eq(likesTable.tweetId, tweetId),
-          eq(likesTable.userHandle, userHandle),
+          eq(likesTable.userId, userId),
         ),
       )
       .execute();

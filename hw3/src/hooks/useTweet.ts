@@ -2,40 +2,44 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import type { PostTweetRequest } from "../app/api/tweets/route";
+
 export default function useTweet() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const postTweet = async ({
-    handle,
+    userId,
     content,
+    timestart,
+    timeend,
     replyToTweetId,
-  }: {
-    handle: string;
-    content: string;
-    replyToTweetId?: number;
-  }) => {
+  } : PostTweetRequest) => {
+    if (loading) return;
     setLoading(true);
 
     const res = await fetch("/api/tweets", {
       method: "POST",
       body: JSON.stringify({
-        handle,
+        userId,
         content,
+        timestart,
+        timeend,
         replyToTweetId,
       }),
     });
 
-    if (!res.ok) {
+    if (res.status !== 200) {
       const body = await res.json();
       throw new Error(body.error);
+    } else {
+      const body = await res.json();
+      const [{id: tweetid}] = body.data;
+      router.refresh();
+      setLoading(false);
+      return tweetid;
     }
 
-    // router.refresh() is a Next.js function that refreshes the page without
-    // reloading the page. This is useful for when we want to update the UI
-    // from server components.
-    router.refresh();
-    setLoading(false);
   };
 
   return {

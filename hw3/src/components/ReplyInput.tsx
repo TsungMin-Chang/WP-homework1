@@ -3,32 +3,34 @@
 import { useRef } from "react";
 
 import GrowingTextarea from "@/components/GrowingTextarea";
-import UserAvatar from "@/components/UserAvatar";
 import useTweet from "@/hooks/useTweet";
-import useUserInfo from "@/hooks/useUserInfo";
+import useUser from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
 
 type ReplyInputProps = {
   replyToTweetId: number;
-  replyToHandle: string;
+  likeState: boolean;
 };
 
 export default function ReplyInput({
   replyToTweetId,
-  replyToHandle,
+  likeState
 }: ReplyInputProps) {
-  const { handle } = useUserInfo();
+
+  const { username, userid } = useUser();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { postTweet, loading } = useTweet();
 
   const handleReply = async () => {
+    if (!userid) return;
     const content = textareaRef.current?.value;
+    const userid_int = parseInt(userid);
     if (!content) return;
-    if (!handle) return;
+    if (!userid_int) return;
 
     try {
       await postTweet({
-        handle,
+        userId: userid_int,
         content,
         replyToTweetId,
       });
@@ -51,28 +53,37 @@ export default function ReplyInput({
     <div onClick={() => textareaRef.current?.focus()}>
       <div className="grid grid-cols-[fit-content(48px)_1fr] gap-4 px-4 pt-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <UserAvatar className="col-start-1 row-start-2 h-12 w-12" />
         <p className="col-start-2 row-start-1 text-gray-500">
-          Replying to <span className="text-brand">@{replyToHandle}</span>
-        </p>
-        <GrowingTextarea
-          ref={textareaRef}
-          wrapperClassName="col-start-2 row-start-2"
-          className="bg-transparent text-xl outline-none placeholder:text-gray-500"
-          placeholder="Tweet your reply"
-        />
-      </div>
-      <div className="p-4 text-end">
-        <button
-          className={cn(
-            "my-2 rounded-full bg-brand px-4 py-2 text-white transition-colors hover:bg-brand/70",
-            "disabled:cursor-not-allowed disabled:bg-brand/40 disabled:hover:bg-brand/40",
+          {likeState ? (
+            <>
+              <h1>A penney for your thoughts...</h1>
+              <br />
+              <GrowingTextarea
+                ref={textareaRef}
+                wrapperClassName="col-start-2 row-start-2"
+                className="bg-transparent text-xl outline-none placeholder:text-gray-500"
+                placeholder="I feel like..."
+              />
+              <div className="p-4 text-end">
+                <button
+                  className={cn(
+                    "my-2 rounded-full bg-brand px-4 py-2 text-white transition-colors hover:bg-brand/70",
+                    "disabled:cursor-not-allowed disabled:bg-brand/40 disabled:hover:bg-brand/40",
+                  )}
+                  onClick={handleReply}
+                  disabled={loading}
+                >
+                  Enter
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1>Join to discuss, {username}!</h1>
+              <br />
+            </>
           )}
-          onClick={handleReply}
-          disabled={loading}
-        >
-          Reply
-        </button>
+        </p>
       </div>
     </div>
   );
