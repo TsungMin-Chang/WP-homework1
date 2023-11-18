@@ -16,6 +16,7 @@ export const {
   callbacks: {
     async session({ session, token }) {
       const email = token.email || session?.user?.email;
+      console.log('hihi',session);
       if (!email) return session;
       const [user] = await db
         .select({

@@ -1,23 +1,67 @@
+"use client"
+
 import { AiFillDelete, AiFillFileAdd, AiFillFileText } from "react-icons/ai";
 import { RxAvatar } from "react-icons/rx";
 
-import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
 import { publicEnv } from "@/lib/env/public";
+import { useRouter } from "next/navigation";
+import { useSession } from 'next-auth/react';
 
-import { createDocument, deleteDocument, getDocuments } from "./actions";
+type DocumentProps = {
+  id: number;
+  userId: string;
+  documentId: string;
+  document: {
+      title: string;
+      displayId: string;
+  };
+}
 
 async function Navbar() {
-  const session = await auth();
-  if (!session || !session?.user?.id) {
-    redirect(publicEnv.NEXT_PUBLIC_BASE_URL);
+  
+  const { data: session } = useSession();
+  const router = useRouter();
+  const userId = session?.user?.id ?? "";
+  console.log(userId);
+
+  if (!userId) return;
+
+  const handleGET = async () => {  
+    const result = await fetch("/api/navbar2", {
+      method: "POST",
+      body: JSON.stringify({
+        userId
+      }),
+    });
+    if (!result.ok) {
+      throw new Error("Failed to fetch data");
+    }
+
+    const data = await result.json();
+    return data.documents as DocumentProps[];
   }
-  const userId = session.user.id;
-  const documents = await getDocuments(userId);
+  const handlePOST = async () => {
+    await fetch("/api/navbar", {
+      method: "POST",
+      body: JSON.stringify({
+        userId
+      }),
+    });
+  }
+  const handleDELETE = async (docId: string) => {
+    await fetch("/api/navbar", {
+      method: "DELETE",
+      body: JSON.stringify({
+        documentId: docId,
+      }),
+    });
+  }
+
+  const documents = await handleGET();
   return (
     <nav className="flex w-full flex-col overflow-y-scroll bg-slate-100 pb-10">
       <nav className="sticky top-0 flex flex-col items-center justify-between border-b bg-slate-100 pb-2">
@@ -42,9 +86,8 @@ async function Navbar() {
         <form
           className="w-full hover:bg-slate-200"
           action={async () => {
-            "use server";
-            const newDocId = await createDocument(userId);
-            revalidatePath("/docs");
+            const newDocId = await handlePOST();
+            router.refresh();
             redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}/docs/${newDocId}`);
           }}
         >
@@ -53,7 +96,7 @@ async function Navbar() {
             className="flex w-full items-center gap-2 px-3 py-1 text-left text-sm text-slate-500"
           >
             <AiFillFileAdd size={16} />
-            <p>Create Document</p>
+            <p>Create Chat Room</p>
           </button>
         </form>
       </nav>
@@ -78,10 +121,9 @@ async function Navbar() {
               <form
                 className="hidden px-2 text-slate-400 hover:text-red-400 group-hover:flex"
                 action={async () => {
-                  "use server";
                   const docId = doc.document.displayId;
-                  await deleteDocument(docId);
-                  revalidatePath("/docs");
+                  await handleDELETE(docId);
+                  router.refresh();
                   redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}/docs`);
                 }}
               >
