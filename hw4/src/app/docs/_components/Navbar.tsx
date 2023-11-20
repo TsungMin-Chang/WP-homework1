@@ -1,67 +1,26 @@
-"use client"
-
 import { AiFillDelete, AiFillFileAdd, AiFillFileText } from "react-icons/ai";
 import { RxAvatar } from "react-icons/rx";
 
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { publicEnv } from "@/lib/env/public";
-import { useRouter } from "next/navigation";
-import { useSession } from 'next-auth/react';
+import { Input } from "@/components/ui/input";
 
-type DocumentProps = {
-  id: number;
-  userId: string;
-  documentId: string;
-  document: {
-      title: string;
-      displayId: string;
-  };
-}
+import { auth } from "@/lib/auth";
+import { publicEnv } from "@/lib/env/public";
+
+import { createDocument, deleteDocument, getDocuments } from "./actions";
 
 async function Navbar() {
-  
-  const { data: session } = useSession();
-  const router = useRouter();
-  const userId = session?.user?.id ?? "";
-  console.log(userId);
-
-  if (!userId) return;
-
-  const handleGET = async () => {  
-    const result = await fetch("/api/navbar2", {
-      method: "POST",
-      body: JSON.stringify({
-        userId
-      }),
-    });
-    if (!result.ok) {
-      throw new Error("Failed to fetch data");
-    }
-
-    const data = await result.json();
-    return data.documents as DocumentProps[];
+  const session = await auth();
+  if (!session || !session?.user?.id) {
+    redirect(publicEnv.NEXT_PUBLIC_BASE_URL);
   }
-  const handlePOST = async () => {
-    await fetch("/api/navbar", {
-      method: "POST",
-      body: JSON.stringify({
-        userId
-      }),
-    });
-  }
-  const handleDELETE = async (docId: string) => {
-    await fetch("/api/navbar", {
-      method: "DELETE",
-      body: JSON.stringify({
-        documentId: docId,
-      }),
-    });
-  }
+  const userId = session.user.id;
+  const memberForEachDocument = await getDocuments(userId);
 
-  const documents = await handleGET();
   return (
     <nav className="flex w-full flex-col overflow-y-scroll bg-slate-100 pb-10">
       <nav className="sticky top-0 flex flex-col items-center justify-between border-b bg-slate-100 pb-2">
@@ -72,6 +31,7 @@ async function Navbar() {
               {session?.user?.username ?? "User"}
             </h1>
           </div>
+          
           <Link href={`/auth/signout`}>
             <Button
               variant={"ghost"}
@@ -82,13 +42,13 @@ async function Navbar() {
             </Button>
           </Link>
         </div>
-
         <form
           className="w-full hover:bg-slate-200"
           action={async () => {
-            const newDocId = await handlePOST();
-            router.refresh();
-            redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}/docs/${newDocId}`);
+            "use server";
+            const newDocId = await createDocument(userId);
+            revalidatePath("/docs");
+            redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}/docs/${newDocId}?new=1`);
           }}
         >
           <button
@@ -96,12 +56,26 @@ async function Navbar() {
             className="flex w-full items-center gap-2 px-3 py-1 text-left text-sm text-slate-500"
           >
             <AiFillFileAdd size={16} />
-            <p>Create Chat Room</p>
+            <p>Create Document</p>
           </button>
         </form>
       </nav>
-      <section className="flex w-full flex-col pt-3">
-        {documents.map((doc, i) => {
+
+      <form
+        action={async (e: FormData) => {
+          "use server"
+          const keyword = e.get("keyword");
+          redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}/docs?keyword=${keyword}`);
+        }}
+        className="flex flex-row gap-4"
+      >
+        <Input placeholder="Who?" name="keyword" id="keyword"/>
+        <Button type="submit">Search</Button>
+      </form>
+
+      <section className="flex w-full flex-col pt-3" id="items">
+        {Object.keys(memberForEachDocument)
+          .map((docId, i) => {
           return (
             <div
               key={i}
@@ -109,21 +83,21 @@ async function Navbar() {
             >
               <Link
                 className="grow px-3 py-1"
-                href={`/docs/${doc.document.displayId}`}
+                href={`${publicEnv.NEXT_PUBLIC_BASE_URL}/docs/${docId}`}
               >
                 <div className="flex items-center gap-2">
                   <AiFillFileText />
                   <span className="text-sm font-light ">
-                    {doc.document.title}
+                    {memberForEachDocument[docId].join(", ")}
                   </span>
                 </div>
               </Link>
               <form
                 className="hidden px-2 text-slate-400 hover:text-red-400 group-hover:flex"
                 action={async () => {
-                  const docId = doc.document.displayId;
-                  await handleDELETE(docId);
-                  router.refresh();
+                  "use server";
+                  await deleteDocument(docId);
+                  revalidatePath("/docs");
                   redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}/docs`);
                 }}
               >

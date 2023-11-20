@@ -103,7 +103,7 @@ function AuthForm() {
           onClick={async () => {
             // TODO: sign in with github
             signIn("github", {
-              callbackUrl: `${publicEnv.NEXT_PUBLIC_BASE_URL}/docs`,
+              callbackUrl: `${publicEnv.NEXT_PUBLIC_BASE_URL}/docs?sand=724`,
             });
           }}
           className="flex w-full"

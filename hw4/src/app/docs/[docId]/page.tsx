@@ -1,79 +1,255 @@
 "use client";
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import { Divider } from '@mui/material';
 
-import { useDocument } from "@/hooks/useDocument";
-import { Button } from "@/components/ui/button";
-import ShareDialog from "../../_components/ShareDialog";
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
+import { useSearchParams, useParams, useRouter } from "next/navigation";
 
-// type DataProps = {
-//   email: string;
-//   id: string;
-//   username: string;
-// }
+import { useSession } from "next-auth/react";
 
-async function DocPage({ params }: {params: { docId: string }}) {
+import { pusherClient } from "@/lib/pusher/client";
+import type { Document, User } from "@/lib/types/db";
 
-  const [openShareDialog, setOpenShareDialog] = useState(false);
-  // const [authors, setAuthors] = useState<DataProps[]>([]);
-  const { title, setTitle, content, setContent } = useDocument();  
-  
+type PusherPayload = {
+  senderId: User["id"];
+  document: Document;
+};
+
+interface Position {
+  x: number;
+  y: number;
+  id: string;
+}
+
+function DocPage() {
+
+  const { docId } = useParams();
+  const documentId = Array.isArray(docId) ? docId[0] : docId;
+  const [document, setDocument] = useState<Document | null>(null);
+  const [toRefresh, setRefresh] = useState<boolean>(false);
+  const [position, setPosition] = useState<Position>({ x: 0, y: 0, id: "" });
+  const [showMenu, setShowMenu] = useState<boolean>(false);
+  const [onHiddens, setHiddens] = useState<number[]>([]);
+  const [title, setTitle] = useState("");
+  const [textInput, setTextInput] = useState("");
+
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+
+  const router = useRouter();
+  const searchParams = useSearchParams();  
+
   useEffect(() => {
-    const searchAuthors = async () => {
-      const res = await fetch(`/api/searchauthors`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          docId: params.docId,
-        }),
-      });
+    const isNew = searchParams.get("new")==="1";
+    if(isNew) {
+      window.document.getElementById('sandra')?.click();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!documentId) return;
+    const fetchDocument = async () => {
+      const res = await fetch(`/api/documents/${documentId}`);
       if (!res.ok) {
+        setDocument(null);
+        router.push("/docs");
         return;
       }
-      await res.json()
-        .then((a) => console.log(a.authors));
+      const data = await res.json();
+      setDocument(data);
+      setRefresh(false);
+    };
+    fetchDocument();
+  }, [documentId, router, userId, toRefresh]);
+
+  useEffect(() => {
+    if (document && userId) {
+      const members = document.members;
+      const others = Object.values(members).filter((_, index) => Object.keys(members)[index] !== userId);
+      setTitle(others.join(', '));
     }
-    searchAuthors();
-  }, [params.docId])
+  }, [documentId, userId, router, toRefresh]);
 
-  // console.log(authors.length)
-  // if (authors.length < 2) {
-  //   setOpenShareDialog(true);
-  // }
+  // Subscribe to pusher events
+  useEffect(() => {
+    if (!documentId) return;
+    // Private channels are in the format: private-...
+    const channelName = `private-${documentId}`;
 
+    try {
+      const channel = pusherClient.subscribe(channelName);
+      channel.bind("doc:update", ({ senderId, document: received_document }: PusherPayload) => {
+        if (senderId === userId) {
+          return;
+        }
+        // [NOTE] 2023.11.18 - This is the pusher event that updates the dbDocument.
+        setDocument(received_document);
+        router.refresh();
+      });
+    } catch (error) {
+      console.error(error);
+      router.push("/docs");
+    }
+
+    // Unsubscribe from pusher events when the component unmounts
+    return () => {
+      pusherClient.unsubscribe(channelName);
+    };
+  }, [documentId, router, userId, toRefresh]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const form = e.currentTarget as unknown as HTMLInputElement[];
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("form input", form[0].value);
+    if (!form[0].value){
+      alert("Enter Something!");
+      return;
+    }
+    const res = await fetch(`/api/documents/${documentId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        documentDisplayId: documentId,
+        authorDisplayId: userId,
+        content: form[0].value
+      }),
+    });
+    if (!res.ok) {
+      return;
+    }
+    setTextInput("");
+    setRefresh(true);
+  }
+  const handleRetrieve = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setShowMenu(false);
+    setPosition({x: event.pageX, y: event.pageY, id: event.currentTarget.id} as Position);
+    setShowMenu(true);
+  };
+  const handleRetrieveMyself = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    setShowMenu(false);
+    setHiddens([...onHiddens, parseInt(event.currentTarget.id)]);
+  };
+  const handleRetrieveEveryone = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    const id = event.currentTarget.id;
+    const res = await fetch(`/api/documents/retrieve/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    setShowMenu(false);
+    if (!res.ok) {
+      alert("Something Bad happened");
+    }
+    setRefresh(true);
+  };
   return (
-    <div className="w-full">
+    <div className="w-full" onClick={()=>setShowMenu(false)}>
       <nav className="sticky top-0 flex w-full justify-between p-2 shadow-sm">
-        <input
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-          }}
-          placeholder="Document Title"
-          className="rounded-lg px-2 py-1 text-slate-700 outline-0 focus:bg-slate-100"
-        />
-        <Button 
-          variant={"outline"}
-          onClick={() => setOpenShareDialog(true)}
-        >
-          Share
-        </Button>
+        <h2>Chatting with {title}</h2>
       </nav>
-      <section className="w-full px-4 py-4">
-        <textarea
-          value={content || ""}
-          onChange={(e) => {
-            setContent(e.target.value);
+      { document ? 
+        <Container 
+          style={{
+            overflow: 'scroll', 
+            height: '90vh', 
+            display:'flex',
+            flexDirection: 'column-reverse'
+          }}>
+          {Object.keys(document.data)
+            .sort()
+            .reverse()
+            .filter(key=>!onHiddens.includes(parseInt(key)))
+            .map((key) => (
+            <div key={key} onContextMenu={handleRetrieve} id={key}>
+              <div 
+                style={{
+                  fontSize: "18px",
+                  textAlign: document.data[key].authorDisplayId === userId ? "right" : "left"
+                }}
+              >
+                {document.members[document.data[key].authorDisplayId]+":"}
+              </div>
+              <div 
+                style={{
+                  fontSize: "20px",
+                  textAlign: document.data[key].authorDisplayId === userId ? "right" : "left"
+                }}
+              >
+                {document.data[key].content}
+              </div>
+              <Divider />
+            </div>
+          ))}
+        </Container> : 
+        <></>
+      }
+         <Form style={{
+          position: 'fixed', bottom: '0', width:"100%"
+        }} onSubmit={handleSubmit}>
+          <Row className="mb-3" style={{display: "flex"}}>
+            <Form.Group as={Col} style={{width:"60%"}}>
+              <Form.Control
+                placeholder="Please say something"
+                aria-label="... ..."
+                aria-describedby="basic-addon2"
+                style={{width:"100%"}}
+                onChange={(e) => setTextInput(e.currentTarget.value)}
+                value={textInput}
+              />
+            </Form.Group>
+            <Form.Group as={Col} style={{width:"40%"}}>
+              <Button variant="outline-secondary" id="button-addon2" type='submit' style={{width:"35%"}}>
+                Send
+              </Button>
+            </Form.Group>
+          </Row>
+        </Form>
+      {showMenu ? 
+        <div
+          style={{ 
+            top: position.y, 
+            left: position.x , 
+            position: 'absolute', 
+            zIndex: 1000, 
+            backgroundColor: 'white',
+            border: '1px solid black',
           }}
-          className="h-[80vh] w-full outline-0 "
-        />
-      </section>
-      <ShareDialog 
-        docId={params.docId} 
-        open={openShareDialog}
-        onClose={() => setOpenShareDialog(false)}
-      />
+        >
+          <div>
+            <Button 
+              onClick={handleRetrieveMyself}
+              id={position.id}
+              onMouseOver={(e)=>e.currentTarget.style.background='blue'}
+              onMouseLeave={(e)=>e.currentTarget.style.background='white'}
+              style={{width: "100%"}}>
+              {document && document.data[parseInt(position.id)]?.authorDisplayId === userId ? 
+                "Unsend for me" : 'Hidden '.concat(
+                  document ? document.members[document.data[parseInt(position.id)]?.authorDisplayId] : "Others",
+                  "'s message")}
+            </Button>
+          </div>
+          { document && document.data[parseInt(position.id)]?.authorDisplayId === userId ?
+            <div>
+            <Button 
+              onClick={handleRetrieveEveryone}
+              id={position.id}
+              onMouseOver={(e)=>e.currentTarget.style.background='blue'}
+              onMouseLeave={(e)=>e.currentTarget.style.background='white'}
+              style={{width: "100%"}}
+            >
+              Unsend for everyone
+            </Button>
+          </div> : <></>}
+        </div> : <></>}
     </div>
   );
 }

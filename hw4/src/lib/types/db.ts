@@ -7,6 +7,14 @@ export type User = {
 
 export type Document = {
   id: string;
-  title: string;
-  content: string;
+  members: { [key: string]: string };
+  data: {
+    [key: string]: {
+      id: number,
+      authorDisplayId: string, 
+      createdAt: Date,
+      content: string,
+      isRead: string[],
+    }
+  };
 };

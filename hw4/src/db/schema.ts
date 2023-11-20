@@ -1,7 +1,8 @@
-import { relations } from "drizzle-orm";
+import { sql, relations } from "drizzle-orm";
 import {
   index,
-  text,
+  integer,
+  timestamp,
   pgTable,
   serial,
   uuid,
@@ -42,13 +43,60 @@ export const documentsTable = pgTable(
   {
     id: serial("id").primaryKey(),
     displayId: uuid("display_id").defaultRandom().notNull().unique(),
-    title: varchar("title", { length: 100 }).notNull(),
-    content: text("content").notNull(),
   },
   (table) => ({
     displayIdIndex: index("display_id_index").on(table.displayId),
   }),
 );
+
+export const dataTable = pgTable(
+  "data",
+  {
+    id: serial("id").primaryKey(),
+    documentDisplayId: varchar("document_display_id")
+      .notNull()
+      .references(() => documentsTable.displayId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    authorDisplayId: varchar("author_display_id")
+      .notNull()
+      .references(() => usersTable.displayId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    createdAt: timestamp("created_at").default(sql`now()`),
+    content: varchar("content", { length: 280 }).notNull(),
+  }
+);
+
+export const readTable = pgTable(
+  "reads",
+  {
+    id: serial("id").primaryKey(),
+    dataId: integer("data_id")
+      .notNull()
+      .references(() => dataTable.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    documentDisplayId: varchar("document_display_id")
+      .notNull()
+      .references(() => documentsTable.displayId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    readerDisplayId: varchar("reader_display_id")
+      .notNull()
+      .references(() => usersTable.displayId, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+  },
+  (table) => ({
+    uniqCombination: unique().on(table.dataId, table.readerDisplayId),
+  }),
+)
 
 export const documentsRelations = relations(documentsTable, ({ many }) => ({
   usersToDocumentsTable: many(usersToDocumentsTable),

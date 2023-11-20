@@ -9,6 +9,10 @@ import { publicEnv } from "@/lib/env/public";
 
 function SignOutPage() {
   const { data: session } = useSession();
+  console.log("Sign Out 1", session);
+  const userId = session?.user?.id;
+  console.log("Sign Out 2", userId);
+  
   const router = useRouter();
   useEffect(() => {
     if (session) {
