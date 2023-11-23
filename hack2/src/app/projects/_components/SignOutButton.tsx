@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 
 export default function SignOutButton() {
   return (
-    <form action={() => {
-      signOut({ callbackUrl: publicEnv.NEXT_PUBLIC_BASE_URL });
+    <form action={async () => {
+      "use server";
+      await signOut({ callbackUrl: publicEnv.NEXT_PUBLIC_BASE_URL });
     }}>
       <Button data-testid="sign-out-button" type="submit">
         Sign Out
