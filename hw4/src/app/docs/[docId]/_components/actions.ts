@@ -3,7 +3,31 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { usersTable, usersToDocumentsTable } from "@/db/schema";
 
-export async function getDocumentAuthors(docId: string) {
+export async function getDocumentAuthors(docId: string, userId: string) {
+
+  const dbAllDocuments = await db.query.usersToDocumentsTable.findMany({
+    with: {
+      user: {
+        columns: {
+          displayId: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  const myAllDocuments = dbAllDocuments.map((document) => {
+    return document.userId === userId ? document.documentId : "";
+  });
+  const myDocuments = [...new Set(myAllDocuments)];
+  const allExistedPartnerEmails: string[] = [];
+  dbAllDocuments.map((document) => {
+    if (document.userId !== userId && myDocuments.includes(document.documentId)) {
+      allExistedPartnerEmails.push(document.user.email); 
+    }
+  });
+  const existedPartnerEmails = [...new Set(allExistedPartnerEmails)];
+
   const dbAuthors = await db.query.usersToDocumentsTable.findMany({
     where: eq(usersToDocumentsTable.documentId, docId),
     with: {
@@ -27,7 +51,7 @@ export async function getDocumentAuthors(docId: string) {
     };
   });
 
-  return authors;
+  return {authors, existedPartnerEmails};
 }
 
 export const addDocumentAuthor = async (docId: string, email: string) => {

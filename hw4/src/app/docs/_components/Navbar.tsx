@@ -56,7 +56,7 @@ async function Navbar() {
             className="flex w-full items-center gap-2 px-3 py-1 text-left text-sm text-slate-500"
           >
             <AiFillFileAdd size={16} />
-            <p>Create Document</p>
+            <p>Create a chat room</p>
           </button>
         </form>
       </nav>

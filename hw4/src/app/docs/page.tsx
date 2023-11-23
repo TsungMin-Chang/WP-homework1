@@ -8,7 +8,7 @@ function DocsPage() {
   const searchParams = useSearchParams(); 
 
   useEffect(() => {
-    const keyword = searchParams.get("keyword");
+    const keyword = searchParams.get("keyword") ?? "";
     const temp = window.document.getElementById("items");
     if (temp && temp.children) {
       const items = Array.prototype.slice.call(temp.children);
@@ -21,8 +21,8 @@ function DocsPage() {
           item.style.display = "flex";
         }
       })
-      if (!!keyword && count === items.length) {
-        alert("Please create a new chat room with this person!");
+      if (keyword && keyword !== "" && count === items.length) {
+        alert("Please create a chat room with this person to start chatting!");
         return;
       }
     }
