@@ -25,7 +25,7 @@ function AuthForm() {
     // TODO: 3. sign in by calling signIn() with the correct parameters
     // hint: notion clone
     // TODO: sign in logic
-    signIn("credentials", {
+    await signIn("credentials", {
       email,
       name,
       password,
@@ -107,7 +107,7 @@ function AuthForm() {
           <p className="text-xs text-gray-400">or</p>
           <div className="h-[1px] grow border-t"></div>
         </div>
-
+        {publicEnv.NEXT_PUBLIC_BASE_URL}
         <Button
           onClick={async () => {
             signIn("github", {

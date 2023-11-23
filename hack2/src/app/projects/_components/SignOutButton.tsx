@@ -10,7 +10,7 @@ export default function SignOutButton() {
             variant={"outline"} 
             onClick={ async () => {
               "use server"
-              signOut({ callbackUrl: publicEnv.NEXT_PUBLIC_BASE_URL });
+               await signOut({ callbackUrl: publicEnv.NEXT_PUBLIC_BASE_URL });
             }}
     >
       Sign Out

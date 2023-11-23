@@ -8,7 +8,7 @@ import AuthForm from "./_components/AuthForm";
 export default async function AuthPage() {
   // If signed in, redirect to /
   const session = await auth();
-
+  console.log(publicEnv.NEXT_PUBLIC_BASE_URL)
   if (session?.user?.id) {
     redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}`);
   }
