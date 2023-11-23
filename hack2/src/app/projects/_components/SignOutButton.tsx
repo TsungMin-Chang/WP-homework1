@@ -6,15 +6,13 @@ import { Button } from "@/components/ui/button";
 
 export default function SignOutButton() {
   return (
-    <Button data-testid="sign-out-button" 
-            variant={"outline"} 
-            onClick={ async () => {
-              "use server"
-               await signOut({ callbackUrl: publicEnv.NEXT_PUBLIC_BASE_URL });
-            }}
-    >
-      Sign Out
-    </Button>
+    <form action={() => {
+      signOut({ callbackUrl: publicEnv.NEXT_PUBLIC_BASE_URL });
+    }}>
+      <Button data-testid="sign-out-button" type="submit">
+        Sign Out
+      </Button>
+    </form>
   )
 }
   // okay

@@ -36,7 +36,6 @@ export default async function ProjectsPage(props: Props) {
             className="mx-auto flex flex-col gap-4 px-12"
             action={async (formData) => {
               "use server";
-
               const newTask = {
                 projectId: project.displayId,
                 title: formData.get("title"),

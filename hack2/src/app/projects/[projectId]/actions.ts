@@ -25,6 +25,7 @@ export async function getProject(projectId: string) {
       eq(usersToProjectsTable.userId, userId),
       eq(usersToProjectsTable.projectId, projectId),
     ),
+    // okay
     // TODO: 8. end
     columns: {},
     with: {
@@ -104,7 +105,10 @@ export async function updateTaskComplete(
   });
 
   // TODO: 9. Update the task's `completed` column
-
+  await db.update(tasksTable)
+    .set({ completed: completed })
+    .where(eq(tasksTable.displayId, taskId));
+  // okay
   // TODO: 9. end
 
   revalidatePath(`/projects/${projectId}`);
@@ -125,6 +129,7 @@ export async function deleteTask(taskId: string, projectId: string) {
   await db
     .delete(tasksTable)
     .where(eq(tasksTable.displayId, taskId));
+  // okay
   // TODO: 10. end
 
   revalidatePath(`/projects/${projectId}`);
