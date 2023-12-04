@@ -22,12 +22,10 @@ type Props = {
   docId: string;
 };
 async function ShareDialog({ docId }: Props) {
-  // "use server"
   const session = await auth();
   if (!session?.user?.id) return null;
   const userId = session.user.id;
-  const {authors, existedPartnerEmails} = await getDocumentAuthors(docId, userId);
-  console.log("share", existedPartnerEmails);
+  const {authors} = await getDocumentAuthors(docId, userId);
 
   return (
     <Dialog>
@@ -45,7 +43,6 @@ async function ShareDialog({ docId }: Props) {
             const email = e.get("email");
             if (!email) return;
             if (typeof email !== "string") return;
-            if (existedPartnerEmails.includes(email)) return;
             const result = await addDocumentAuthor(docId, email);
             if (!result) {
               redirect(`${publicEnv.NEXT_PUBLIC_BASE_URL}/docs/${docId}`);

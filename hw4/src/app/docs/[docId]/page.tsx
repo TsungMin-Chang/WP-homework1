@@ -51,14 +51,6 @@ function DocPage() {
   }, []);
 
   useEffect(() => {
-    const error = searchParams.get("error") ?? "";
-    if (error === '1') {
-      alert("You already have a chat room with this person, insert another email!");
-      return;
-    }
-  }, []);
-
-  useEffect(() => {
     if (!documentId) return;
     const fetchDocument = async () => {
       const res = await fetch(`/api/documents/${documentId}`);
